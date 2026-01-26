@@ -7,13 +7,13 @@ function __setpaths() {
   fi
 
   # $TOOLS = /foss/tools
-  export OPENROAD=$TOOLS/openroad-latest
+  export OPENROAD=$TOOLS/openroad
   echo "OpenROAD: ${OPENROAD}"
 
-  export OPENROAD_EXE=$TOOLS/openroad-latest/bin/openroad
+  export OPENROAD_EXE=$TOOLS/openroad/bin/openroad
   echo "OpenROAD EXE: ${OPENROAD_EXE}"
 
-  export OPENSTA_EXE=$TOOLS/openroad-latest/bin/sta
+  export OPENSTA_EXE=$TOOLS/openroad/bin/sta
   echo "OpenSTA EXE: ${OPENSTA_EXE}"
 
   export YOSYS_EXE=$TOOLS/yosys/bin/yosys

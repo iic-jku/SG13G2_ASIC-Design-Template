@@ -1,0 +1,71 @@
+name: Auto Update on new IIC-OSIC-TOOLS Release
+
+on:
+  schedule:
+    # Run every day at 08:00 UTC
+    - cron: '0 8 * * *'
+  # Allow manual trigger for testing
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  check-and-update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Check for new IIC-OSIC-TOOLS Release
+        id: check_version
+        run: |
+          # 1. Get the latest release tag from the external repo
+          LATEST_TAG=$(curl -s https://api.github.com/repos/iic-jku/IIC-OSIC-TOOLS/releases/latest | jq -r .tag_name)
+          
+          echo "Latest IIC-OSIC-TOOLS version: $LATEST_TAG"
+          
+          # 2. Read the currently used version from local file
+          # We use the new filename here:
+          if [ -f .iic_osic_tools_version ]; then
+            CURRENT_VERSION=$(cat .iic_osic_tools_version)
+          else
+            CURRENT_VERSION="none"
+          fi
+          
+          echo "Current local version: $CURRENT_VERSION"
+          
+          # 3. Compare versions
+          if [ "$LATEST_TAG" != "$CURRENT_VERSION" ]; then
+            echo "New version detected!"
+            echo "new_release=true" >> $GITHUB_OUTPUT
+            echo "release_tag=$LATEST_TAG" >> $GITHUB_OUTPUT
+          else
+            echo "No new version."
+            echo "new_release=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Run Update Script
+        if: steps.check_version.outputs.new_release == 'true'
+        run: |
+          chmod +x update_orfs.sh
+          ./update_orfs.sh
+          
+          # Update the local tracker file with the new name
+          echo "${{ steps.check_version.outputs.release_tag }}" > .iic_osic_tools_version
+
+      - name: Create Pull Request
+        if: steps.check_version.outputs.new_release == 'true'
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "chore: update ORFS for IIC-OSIC-TOOLS ${{ steps.check_version.outputs.release_tag }}"
+          title: "Update ORFS (Toolchain: ${{ steps.check_version.outputs.release_tag }})"
+          body: |
+            This PR was auto-generated because **iic-jku/IIC-OSIC-TOOLS** released version `${{ steps.check_version.outputs.release_tag }}`.
+            
+            The `update_orfs.sh` script has been executed.
+          branch: "auto-update-${{ steps.check_version.outputs.release_tag }}"
+          base: main
+          delete-branch: true

@@ -5,7 +5,7 @@ This template repository is suited for analog mixed-signal design with the 130nm
 
 IHP SG13G2 PDK: https://github.com/IHP-GmbH/IHP-Open-PDK
 
-IIC-OSIC-Tools (version 2025.07): https://github.com/iic-jku/IIC-OSIC-TOOLS
+IIC-OSIC-Tools (version 2025.12): https://github.com/iic-jku/IIC-OSIC-TOOLS
 
 The installation of IIC-OSIC-Tools is explained under `SG13G2_ASIC-Design-Template/doc/Docker-Tutorial.pdf` or in this YouTube video: https://www.youtube.com/watch?v=azgFzleiBW8&t=1943s.
 

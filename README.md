@@ -1,4 +1,5 @@
 # An Open-Source ASIC Design Template for the SG13G2 IHP Open-PDK.
+
 ## Introduction
 
 This template repository is suited for analog mixed-signal design with the 130nm BiCMOS open-source SG13G2 PDK by IHP and the IIC-OSIC-Tools by the Institute for Integrated Circuits and Quantum Computing (IICQC), Johannes Kepler University, Linz (JKU).
@@ -7,7 +8,7 @@ IHP SG13G2 PDK: https://github.com/IHP-GmbH/IHP-Open-PDK
 
 IIC-OSIC-Tools (version 2025.12): https://github.com/iic-jku/IIC-OSIC-TOOLS
 
-The installation of IIC-OSIC-Tools is explained under `SG13G2_ASIC-Design-Template/doc/Docker-Tutorial.pdf` or in this YouTube video: https://www.youtube.com/watch?v=azgFzleiBW8&t=1943s.
+The installation of IIC-OSIC-Tools is explained under `SG13G2_ASIC-Design-Template/doc/Docker-Tutorial.pdf` or in this YouTube video: https://www.youtube.com/watch?v=UrUOg9s7gsM
 
 **Update:** Since version 2025.03, third-party software such as Xserver is no longer required.
 
@@ -29,6 +30,7 @@ This template repository should update itself automatically using GitHub actions
 
 1. Clone or download this repo and copy it into the `foss/designs` folder of your IIC-OSIC-Tools environment.
 2. Copy the `.designinit` file from `foss/designs/SG13G2_ASIC-Design-Template` to `foss/designs` and check the path for Xschem. This will change the used PDK to SG13G2 by IHP.
+
    **Update:** The path to Xschem is now set with the `xschemrc` file. Just start Xschem within the `xschem` folder and everything will be set up.
 3. Run `run_all.sh` with the `-s/--sim` flag (`./run_all.sh -s counter`) for creating only a synthesized Verilog file and a `.xspice` file for simulation in `Xschem`.
 4. Run `run_all.sh` with the `-l/--layout` flag (`./run_all.sh -l counter`) for creating a synthesized Verilog file and the digital layout. No `.xspice` file is created or overwritten.

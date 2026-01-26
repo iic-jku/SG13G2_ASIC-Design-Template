@@ -76,7 +76,7 @@ def extractTagFromFile(
     count=False,
     occurrence=-1,
     defaultNotFound="N/A",
-    t=str,
+    t=float,
     required=True,
 ):
     if jsonTag in jsonFile:
@@ -102,7 +102,7 @@ def extractTagFromFile(
                 value = parsedMetrics[occurrence]
                 value = value.strip()
                 try:
-                    jsonFile[jsonTag] = float(value)
+                    jsonFile[jsonTag] = t(value)
                 except BaseException:
                     jsonFile[jsonTag] = str(value)
         else:
@@ -231,10 +231,11 @@ def extract_metrics(
     # Synthesis
     # =========================================================================
 
+    # The new format (>= 0.57) is: <count> <area> cells
     extractTagFromFile(
         "synth__design__instance__count__stdcell",
         metrics_dict,
-        "Number of cells: +(\\S+)",
+        "^\\s+(\\d+)\\s+[-0-9.]+\\s+cells$",
         rptPath + "/synth_stat.txt",
     )
 
@@ -344,6 +345,10 @@ def extract_metrics(
         metrics_dict["total_time"] = "ERR"
     else:
         metrics_dict["total_time"] = str(total)
+
+    metrics_dict = {
+        key.replace(":", "__"): value for key, value in metrics_dict.items()
+    }
 
     if hier_json:
         # Convert the Metrics dictionary to hierarchical format by stripping

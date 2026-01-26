@@ -78,12 +78,18 @@ else
   # export PROJECT_NAME="$name"
   # $OPENROAD_EXE -no_splash -exit report_power.tcl
   
-  # Display layout
-  make gui_final
+  # Copy reports
+  mkdir -p ../../reports/
+  cp -r reports/ihp-sg13g2/"$name"/base/6_finish.rpt ../../reports/"$name"_final.rpt
+  cp -r reports/ihp-sg13g2/"$name"/base/synth_check.txt ../../reports/synth_check.txt
+  cp -r reports/ihp-sg13g2/"$name"/base/synth_stat.txt ../../reports/synth_stat.txt
   
   # Copy GDS file
   mkdir -p ../../gds/
   cp -r results/ihp-sg13g2/"$name"/base/6_final.gds ../../gds/"$name".gds
+  
+  # Display layout
+  make gui_final
 fi
 
 # Finish

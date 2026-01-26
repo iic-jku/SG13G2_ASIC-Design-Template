@@ -80,6 +80,10 @@ else
   
   # Display layout
   make gui_final
+  
+  # Copy GDS file
+  mkdir -p ../../gds/
+  cp -r results/ihp-sg13g2/"$name"/base/6_final.gds ../../gds/"$name".gds
 fi
 
 # Finish

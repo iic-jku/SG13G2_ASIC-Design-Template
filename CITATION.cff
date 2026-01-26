@@ -1,0 +1,12 @@
+cff-version: 1.2.0
+message: "If you use this template or base your work on it, please cite it as below."
+authors:
+- family-names: Dorrer
+  given-names: Simon
+  orcid: https://orcid.org/0009-0001-5994-5477
+title: "GitHub Repository for an Open-Source ASIC Design Template for the SG13G2 IHP Open-PDK"
+date-released: 2026-01-26
+url: https://github.com/simi1505/SG13G2_ASIC-Design-Template/tree/2025.12
+identifiers:
+  - type: doi
+    value: 10.5281/zenodo.18378633

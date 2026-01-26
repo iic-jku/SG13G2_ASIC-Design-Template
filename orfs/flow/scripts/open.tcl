@@ -2,7 +2,9 @@ source $::env(SCRIPTS_DIR)/util.tcl
 
 source_env_var_if_exists PLATFORM_TCL
 
-source $::env(SCRIPTS_DIR)/read_liberty.tcl
+if { [env_var_equals GUI_TIMING 1] } {
+  source $::env(SCRIPTS_DIR)/read_liberty.tcl
+}
 
 if { [env_var_exists_and_non_empty DEF_FILE] } {
   log_cmd read_lef $::env(TECH_LEF)
@@ -16,7 +18,7 @@ if { [env_var_exists_and_non_empty DEF_FILE] } {
   log_cmd read_def $input_file
 } else {
   set input_file $::env(ODB_FILE)
-  log_cmd read_db $input_file
+  log_cmd read_db {*}[hier_options] $input_file
 }
 
 proc read_timing { input_file } {
@@ -32,7 +34,11 @@ proc read_timing { input_file } {
     source $::env(PLATFORM_DIR)/derate.tcl
   }
 
-  source $::env(PLATFORM_DIR)/setRC.tcl
+  if { [env_var_exists_and_non_empty LAYER_PARASITICS_FILE] } {
+    log_cmd source $::env(LAYER_PARASITICS_FILE)
+  } else {
+    log_cmd source $::env(PLATFORM_DIR)/setRC.tcl
+  }
   if { $design_stage >= 4 } {
     # CTS has run, so propagate clocks
     set_propagated_clock [all_clocks]
@@ -45,14 +51,14 @@ proc read_timing { input_file } {
       log_cmd estimate_parasitics -global_routing
     } else {
       puts "No global routing results available, skipping estimate_parasitics"
-      puts "Load $::global_route_congestion_report for details"
     }
   } elseif { $design_stage >= 3 } {
     log_cmd estimate_parasitics -placement
   }
 
   # Warm up OpenSTA, so clicking on timing related buttons reacts faster
-  set _tmp [log_cmd find_timing_paths]
+  set _tmp [log_cmd sta::find_timing]
+  set _tmp [log_cmd sta::find_requireds]
 }
 
 if { [ord::openroad_gui_compiled] } {
@@ -61,7 +67,7 @@ if { [ord::openroad_gui_compiled] } {
     "OpenROAD - $::env(PLATFORM)/$::env(DESIGN_NICKNAME)/$::env(FLOW_VARIANT) - ${db_basename}"
 }
 
-if { [env_var_equals GUI_TIMING 1] } {
+if { $::env(GUI_TIMING) } {
   puts "GUI_TIMING=1 reading timing, takes a little while for large designs..."
   read_timing $input_file
   if { [gui::enabled] } {

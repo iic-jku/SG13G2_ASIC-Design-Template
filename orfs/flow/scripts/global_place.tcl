@@ -5,26 +5,19 @@ load_design 3_2_place_iop.odb 2_floorplan.sdc
 
 set_dont_use $::env(DONT_USE_CELLS)
 
-remove_buffers
+if { $::env(GPL_TIMING_DRIVEN) } {
+  remove_buffers
+}
 
 # Do not buffer chip-level designs
 # by default, IO ports will be buffered
 # to not buffer IO ports, set environment variable
 # DONT_BUFFER_PORT = 1
 if { ![env_var_exists_and_non_empty FOOTPRINT] } {
-  if { ![env_var_equals DONT_BUFFER_PORTS 1] } {
+  if { !$::env(DONT_BUFFER_PORTS) } {
     puts "Perform port buffering..."
-    buffer_ports
+    buffer_ports {*}[env_var_or_empty BUFFER_PORTS_ARGS]
   }
-}
-
-if { [env_var_exists_and_non_empty FASTROUTE_TCL] } {
-  log_cmd source $::env(FASTROUTE_TCL)
-} else {
-  log_cmd \
-    set_global_routing_layer_adjustment \
-    $::env(MIN_ROUTING_LAYER)-$::env(MAX_ROUTING_LAYER) $::env(ROUTING_LAYER_ADJUSTMENT)
-  log_cmd set_routing_layers -signal $::env(MIN_ROUTING_LAYER)-$::env(MAX_ROUTING_LAYER)
 }
 
 set global_placement_args {}
@@ -40,6 +33,19 @@ if { $::env(GPL_TIMING_DRIVEN) } {
   }
 }
 
+# Parameters for phi coefficients in global placement
+set min_phi $::env(MIN_PLACE_STEP_COEF)
+set max_phi $::env(MAX_PLACE_STEP_COEF)
+
+if { $min_phi > $max_phi } {
+  utl::error GPL 200 \
+    "MIN_PLACE_STEP_COEF ($min_phi) cannot be greater than \
+MAX_PLACE_STEP_COEF ($max_phi)"
+}
+
+lappend global_placement_args -min_phi_coef $::env(MIN_PLACE_STEP_COEF)
+lappend global_placement_args -max_phi_coef $::env(MAX_PLACE_STEP_COEF)
+
 proc do_placement { global_placement_args } {
   set all_args [concat [list -density [place_density_with_lb_addon] \
     -pad_left $::env(CELL_PAD_IN_SITES_GLOBAL_PLACEMENT) \
@@ -53,17 +59,17 @@ proc do_placement { global_placement_args } {
 
 set result [catch { do_placement $global_placement_args } errMsg]
 if { $result != 0 } {
-  write_db $::env(RESULTS_DIR)/3_3_place_gp-failed.odb
+  orfs_write_db $::env(RESULTS_DIR)/3_3_place_gp-failed.odb
   error $errMsg
 }
 
-estimate_parasitics -placement
+log_cmd estimate_parasitics -placement
 
-if { [env_var_equals CLUSTER_FLOPS 1] } {
+if { $::env(CLUSTER_FLOPS) } {
   cluster_flops
-  estimate_parasitics -placement
+  log_cmd estimate_parasitics -placement
 }
 
 report_metrics 3 "global place" false false
 
-write_db $::env(RESULTS_DIR)/3_3_place_gp.odb
+orfs_write_db $::env(RESULTS_DIR)/3_3_place_gp.odb

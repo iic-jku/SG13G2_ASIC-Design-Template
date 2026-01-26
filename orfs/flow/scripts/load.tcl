@@ -3,6 +3,12 @@ source $::env(SCRIPTS_DIR)/util.tcl
 source $::env(SCRIPTS_DIR)/report_metrics.tcl
 
 proc load_design { design_file sdc_file } {
+  # Do not reload if design is already loaded
+  set db [ord::get_db]
+  if { [$db getChip] != "NULL" && [[$db getChip] getBlock] != "NULL" } {
+    return
+  }
+
   source_env_var_if_exists PLATFORM_TCL
 
   source $::env(SCRIPTS_DIR)/read_liberty.tcl
@@ -18,23 +24,9 @@ proc load_design { design_file sdc_file } {
       }
     }
     read_verilog $::env(RESULTS_DIR)/$design_file
-    if {
-      [env_var_exists_and_non_empty SYNTH_WRAPPED_OPERATORS] ||
-      [env_var_exists_and_non_empty SWAP_ARITH_OPERATORS]
-    } {
-      link_design -hier $::env(DESIGN_NAME)
-    } else {
-      link_design $::env(DESIGN_NAME)
-    }
+    log_cmd link_design {*}[hier_options] $::env(DESIGN_NAME)
   } elseif { $ext == ".odb" } {
-    if {
-      [env_var_exists_and_non_empty SYNTH_WRAPPED_OPERATORS] ||
-      [env_var_exists_and_non_empty SWAP_ARITH_OPERATORS]
-    } {
-      read_db -hier $::env(RESULTS_DIR)/$design_file
-    } else {
-      read_db $::env(RESULTS_DIR)/$design_file
-    }
+    log_cmd read_db {*}[hier_options] $::env(RESULTS_DIR)/$design_file
   } else {
     error "Unrecognized input file $design_file"
   }
@@ -46,7 +38,11 @@ proc load_design { design_file sdc_file } {
     log_cmd source $::env(PLATFORM_DIR)/derate.tcl
   }
 
-  source $::env(PLATFORM_DIR)/setRC.tcl
+  if { [env_var_exists_and_non_empty LAYER_PARASITICS_FILE] } {
+    log_cmd source $::env(LAYER_PARASITICS_FILE)
+  } else {
+    log_cmd source $::env(PLATFORM_DIR)/setRC.tcl
+  }
 
   if { [env_var_equals LIB_MODEL CCS] } {
     puts "Using CCS delay calculation"
@@ -56,11 +52,6 @@ proc load_design { design_file sdc_file } {
 
 #===========================================================================================
 # Routines to run equivalence tests when they are enabled.
-
-proc get_verilog_cells_for_design { } {
-  set dir "$::env(PLATFORM_DIR)/work_around_yosys/"
-  set cell_files [glob $dir/*.v]
-}
 
 proc write_eqy_verilog { filename } {
   # Filter out cells with no verilog/not needed for equivalence such
@@ -72,44 +63,16 @@ proc write_eqy_verilog { filename } {
   }
 }
 
-proc write_eqy_script_for_sky130hd { } {
-  error "this routine is not yet implemented"
-  #[gold]
-  #read_verilog -sv ./before.v ./formal_pdk.v
-
-  #[gate]
-  #read_verilog -sv ./after.v ./formal_pdk.v
-
-  #[script]
-  #prep -top aes_cipher_top -flatten
-
-  ## Using `rename -hide` is a better performing choice than nomatch
-  ##   if the signal names have no meaning at all
-  #rename -hide */_*_.*
-
-  ## This removes unused signals before partitioning so no partitions are created for them
-  #opt_clean -purge
-  #memory_map
-
-  #[collect *]
-  ## This groups signals like `some_signal[0]`, `some_signal[1]`, ... that only differ in the index
-  #group *[] \1[]
-
-  #[strategy basic]
-  #use sat
-  #depth 2
-}
-
-
 proc write_eqy_script { } {
   set top_cell [current_design]
-  set cell_files [get_verilog_cells_for_design]
   set outfile [open "$::env(OBJECTS_DIR)/4_eqy_test.eqy" w]
   # Gold netlist
-  puts $outfile "\[gold]\nread_verilog -sv $::env(RESULTS_DIR)/4_before_rsz.v $cell_files\n"
+  puts $outfile "\[gold]\nread_liberty -ignore_miss_func $::env(LIB_FILES)\n"
+  puts $outfile "read_verilog -sv $::env(RESULTS_DIR)/4_before_rsz.v\n"
   puts $outfile "prep -top $top_cell -flatten\nmemory_map\n\n"
   # Modified netlist
-  puts $outfile "\[gate]\nread_verilog -sv $::env(RESULTS_DIR)/4_after_rsz.v $cell_files\n"
+  puts $outfile "\[gate]\nread_liberty -ignore_miss_func $::env(LIB_FILES)\n"
+  puts $outfile "read_verilog -sv $::env(RESULTS_DIR)/4_after_rsz.v\n"
   puts $outfile "prep -top $top_cell -flatten\nmemory_map\n\n"
 
   # Recommendation from eqy team on how to speed up a design

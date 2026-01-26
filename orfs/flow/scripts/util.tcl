@@ -14,18 +14,20 @@ proc log_cmd { cmd args } {
 }
 
 proc repair_timing_helper { args } {
-  set additional_args "$args -verbose"
+  set additional_args {}
   append_env_var additional_args SETUP_SLACK_MARGIN -setup_margin 1
-  if { $::env(HOLD_SLACK_MARGIN) < 0 } {
-    append_env_var additional_args HOLD_SLACK_MARGIN -hold_margin 1
-  }
+  append_env_var additional_args HOLD_SLACK_MARGIN -hold_margin 1
   append_env_var additional_args SETUP_MOVE_SEQUENCE -sequence 1
   append_env_var additional_args TNS_END_PERCENT -repair_tns 1
   append_env_var additional_args SKIP_PIN_SWAP -skip_pin_swap 0
   append_env_var additional_args SKIP_GATE_CLONING -skip_gate_cloning 0
   append_env_var additional_args SKIP_BUFFER_REMOVAL -skip_buffer_removal 0
   append_env_var additional_args SKIP_LAST_GASP -skip_last_gasp 0
+  append_env_var additional_args SKIP_VT_SWAP -skip_vt_swap 0
+  append_env_var additional_args SKIP_CRIT_VT_SWAP -skip_crit_vt_swap 0
   append_env_var additional_args MATCH_CELL_FOOTPRINT -match_cell_footprint 0
+  lappend additional_args {*}$args -verbose
+
   log_cmd repair_timing {*}$additional_args
 }
 
@@ -143,6 +145,9 @@ proc find_macros { } {
 }
 
 proc erase_non_stage_variables { stage_name } {
+  if { $::env(KEEP_VARS) } {
+    return
+  }
   # "$::env(SCRIPTS_DIR)/stage_variables.py stage_name" returns list of
   # variables to erase.
   #
@@ -185,4 +190,71 @@ proc source_env_var_if_exists { env_var } {
   if { [env_var_exists_and_non_empty $env_var] } {
     log_cmd source $::env($env_var)
   }
+}
+
+# Feature toggle for now, eventually the -hier option
+# will be default and this code will be deleted.
+proc hier_options { } {
+  if {
+    ([env_var_exists_and_non_empty SYNTH_WRAPPED_OPERATORS] ||
+      [env_var_exists_and_non_empty SWAP_ARITH_OPERATORS]) &&
+    !$::env(OPENROAD_HIERARCHICAL)
+  } {
+    error "SYNTH_WRAPPED_OPERATORS or SWAP_ARITH_OPERATORS require OPENROAD_HIERARCHICAL to be set."
+  }
+  if { $::env(OPENROAD_HIERARCHICAL) } {
+    return "-hier"
+  } else {
+    return ""
+  }
+}
+
+proc is_physical_only_master { master } {
+  set physical_only_type_patterns [list \
+    "COVER" \
+    "COVER_BUMP" \
+    "RING" \
+    "PAD_SPACER" \
+    "CORE_FEEDTHROUGH" \
+    "CORE_SPACER" \
+    "CORE_ANTENNACELL" \
+    "CORE_WELLTAP" \
+    "ENDCAP*"]
+  set master_type [$master getType]
+  foreach pattern $physical_only_type_patterns {
+    if { [string match $pattern $master_type] } {
+      return 1
+    }
+  }
+  return 0
+}
+
+# Finds all physical-only masters in the current database and
+# returns their names.
+proc find_physical_only_masters { } {
+  set db [::ord::get_db]
+  set libs [$db getLibs]
+  set physical_only_masters [list]
+  foreach lib $libs {
+    foreach master [$lib getMasters] {
+      if { [is_physical_only_master $master] } {
+        lappend physical_only_masters [$master getName]
+      }
+    }
+  }
+  return $physical_only_masters
+}
+
+proc orfs_write_db { output_file } {
+  if { !$::env(WRITE_ODB_AND_SDC_EACH_STAGE) } {
+    return
+  }
+  log_cmd write_db $output_file
+}
+
+proc orfs_write_sdc { output_file } {
+  if { !$::env(WRITE_ODB_AND_SDC_EACH_STAGE) } {
+    return
+  }
+  log_cmd write_sdc -no_timestamp $output_file
 }

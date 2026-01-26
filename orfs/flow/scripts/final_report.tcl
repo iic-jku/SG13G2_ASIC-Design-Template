@@ -8,17 +8,21 @@ set_propagated_clock [all_clocks]
 # Ensure all OR created (rsz/cts) instances are connected
 global_connect
 
-write_db $::env(RESULTS_DIR)/6_final.odb
+orfs_write_db $::env(RESULTS_DIR)/6_final.odb
 
 # Delete routing obstructions for final DEF
 source $::env(SCRIPTS_DIR)/deleteRoutingObstructions.tcl
 deleteRoutingObstructions
 
 write_def $::env(RESULTS_DIR)/6_final.def
-write_verilog $::env(RESULTS_DIR)/6_final.v
+write_verilog $::env(RESULTS_DIR)/6_final.v \
+  -remove_cells [find_physical_only_masters]
 
 # Run extraction and STA
-if { [env_var_exists_and_non_empty RCX_RULES] } {
+if {
+  [env_var_exists_and_non_empty RCX_RULES]
+  && !$::env(SKIP_DETAILED_ROUTE)
+} {
   # RCX section
   define_process_corner -ext_model_index 0 X
   extract_parasitics -ext_model_file $::env(RCX_RULES)
@@ -51,6 +55,8 @@ if { [env_var_exists_and_non_empty RCX_RULES] } {
   }
 } else {
   puts "OpenRCX is not enabled for this platform."
+  puts "Falling back to global route-based estimates."
+  log_cmd estimate_parasitics -global_routing
 }
 
 report_cell_usage

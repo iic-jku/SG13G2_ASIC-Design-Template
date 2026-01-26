@@ -7,7 +7,7 @@ source $::env(PLATFORM_DIR)/setRC.tcl
 
 proc do_dpl { } {
   # Only for use with hybrid rows
-  if { [env_var_equals BALANCE_ROWS 1] } {
+  if { $::env(BALANCE_ROWS) } {
     balance_row_usage
   }
 
@@ -16,7 +16,7 @@ proc do_dpl { } {
     -right $::env(CELL_PAD_IN_SITES_DETAIL_PLACEMENT)
   detailed_placement
 
-  if { [env_var_equals ENABLE_DPO 1] } {
+  if { $::env(ENABLE_DPO) } {
     if { [env_var_exists_and_non_empty DPO_MAX_DISPLACEMENT] } {
       improve_placement -max_displacement $::env(DPO_MAX_DISPLACEMENT)
     } else {
@@ -27,15 +27,15 @@ proc do_dpl { } {
 
   utl::info FLW 12 "Placement violations [check_placement -verbose]."
 
-  estimate_parasitics -placement
+  log_cmd estimate_parasitics -placement
 }
 
 set result [catch { do_dpl } errMsg]
 if { $result != 0 } {
-  write_db $::env(RESULTS_DIR)/3_5_place_dp-failed.odb
+  orfs_write_db $::env(RESULTS_DIR)/3_5_place_dp-failed.odb
   error $errMsg
 }
 
 report_metrics 3 "detailed place" true false
 
-write_db $::env(RESULTS_DIR)/3_5_place_dp.odb
+orfs_write_db $::env(RESULTS_DIR)/3_5_place_dp.odb

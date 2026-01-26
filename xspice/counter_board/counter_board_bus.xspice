@@ -1,17 +1,17 @@
 * XSpice netlist created from SPICE and liberty sources by spi2xspice.py
 *SPICE netlist created from verilog structural netlist module counter_board_bus by vlog2Spice (qflow)
-.subckt counter_board_bus a_VPWR a_VGND a_clock_i a_counter_value_o_0_ a_counter_value_o_1_ a_counter_value_o_2_ a_counter_value_o_3_ a_enable_i a_reset_n_i
-A_11_ [counter_value_o_0_ enable_i] _00_ d_lut_sg13g2_xor2_1
-A_12_ [counter_value_o_0_ enable_i] _04_ d_lut_sg13g2_nand2_1
-A_13_ [counter_value_o_1_ _04_] _01_ d_lut_sg13g2_xnor2_1
-A_14_ [counter_value_o_1_ counter_value_o_0_ enable_i] _05_ d_lut_sg13g2_nand3_1
-A_15_ [counter_value_o_2_ _05_] _02_ d_lut_sg13g2_xnor2_1
-A_16_ [counter_value_o_1_ counter_value_o_0_ counter_value_o_2_ enable_i] _06_ d_lut_sg13g2_nand4_1
-A_17_ [counter_value_o_3_ _06_] _03_ d_lut_sg13g2_xnor2_1
-A\counter_0.n20_q_0_$_DFFE_PN0P_ _00_ clock_i NULL ~reset_n_i counter_value_o_0_ _10_ ddflop
-A\counter_0.n20_q_1_$_DFFE_PN0P_ _01_ clock_i NULL ~reset_n_i counter_value_o_1_ _09_ ddflop
-A\counter_0.n20_q_2_$_DFFE_PN0P_ _02_ clock_i NULL ~reset_n_i counter_value_o_2_ _08_ ddflop
-A\counter_0.n20_q_3_$_DFFE_PN0P_ _03_ clock_i NULL ~reset_n_i counter_value_o_3_ _07_ ddflop
+.subckt counter_board_bus a_VPWR a_VGND a_clock_i a_reset_n_i a_enable_i a_counter_value_o_0_ a_counter_value_o_1_ a_counter_value_o_2_ a_counter_value_o_3_
+A_07_ [counter_value_o_0_ enable_i] _00_ d_lut_sg13g2_xor2_1
+A_08_ [counter_value_o_0_ enable_i] _04_ d_lut_sg13g2_nand2_1
+A_09_ [counter_value_o_1_ _04_] _01_ d_lut_sg13g2_xnor2_1
+A_10_ [counter_value_o_0_ counter_value_o_1_ enable_i] _05_ d_lut_sg13g2_nand3_1
+A_11_ [counter_value_o_2_ _05_] _02_ d_lut_sg13g2_xnor2_1
+A_12_ [counter_value_o_0_ counter_value_o_1_ counter_value_o_2_ enable_i] _06_ d_lut_sg13g2_nand4_1
+A_13_ [counter_value_o_3_ _06_] _03_ d_lut_sg13g2_xnor2_1
+A\counter_0.n20_0_$_DFFE_PN0P_ _00_ clock_i NULL ~reset_n_i counter_value_o_0_ NULL ddflop
+A\counter_0.n20_1_$_DFFE_PN0P_ _01_ clock_i NULL ~reset_n_i counter_value_o_1_ NULL ddflop
+A\counter_0.n20_2_$_DFFE_PN0P_ _02_ clock_i NULL ~reset_n_i counter_value_o_2_ NULL ddflop
+A\counter_0.n20_3_$_DFFE_PN0P_ _03_ clock_i NULL ~reset_n_i counter_value_o_3_ NULL ddflop
 
 .model todig_1v5 adc_bridge(in_high=1.0 in_low=0.5 rise_delay=500p fall_delay=500p)
 .model toana_1v5 dac_bridge(out_high=1.5 out_low=0)
@@ -24,12 +24,12 @@ A\counter_0.n20_q_3_$_DFFE_PN0P_ _03_ clock_i NULL ~reset_n_i counter_value_o_3_
 AA2D1 [a_VPWR] [VPWR] todig_1v5
 AA2D2 [a_VGND] [VGND] todig_1v5
 AA2D3 [a_clock_i] [clock_i] todig_1v5
+AA2D4 [a_reset_n_i] [reset_n_i] todig_1v5
+AA2D5 [a_enable_i] [enable_i] todig_1v5
 AD2A1 [counter_value_o_0_] [a_counter_value_o_0_] toana_1v5
 AD2A2 [counter_value_o_1_] [a_counter_value_o_1_] toana_1v5
 AD2A3 [counter_value_o_2_] [a_counter_value_o_2_] toana_1v5
 AD2A4 [counter_value_o_3_] [a_counter_value_o_3_] toana_1v5
-AA2D4 [a_enable_i] [enable_i] todig_1v5
-AA2D5 [a_reset_n_i] [reset_n_i] todig_1v5
 
 .ends
 
@@ -48,5 +48,5 @@ AA2D5 [a_reset_n_i] [reset_n_i] todig_1v5
 * sg13g2_nand4_1 !(A*B*C*D)
 .model d_lut_sg13g2_nand4_1 d_lut (rise_delay=50p fall_delay=50p input_load=250f
 + table_values "1111111111111110")
-* sg13g2_dfrbp_1 IQ
+* sg13g2_dfrbpq_1 IQ
 .end

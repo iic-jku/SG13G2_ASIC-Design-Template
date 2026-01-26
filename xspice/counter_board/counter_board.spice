@@ -3,30 +3,22 @@
 
 .include /foss/pdks/ihp-sg13g2/libs.ref/sg13g2_stdcell/spice/sg13g2_stdcell.spice
 
-.subckt counter_board VPWR VGND clock_i counter_value_o[0] counter_value_o[1] counter_value_o[2] counter_value_o[3]
-+ enable_i reset_n_i 
+.subckt counter_board VPWR VGND clock_i reset_n_i enable_i counter_value_o[0] counter_value_o[1]
++ counter_value_o[2] counter_value_o[3] 
 
-X_11_ _00_ counter_value_o[0] enable_i VPWR VGND sg13g2_xor2_1
-X_12_ _04_ counter_value_o[0] enable_i VPWR VGND sg13g2_nand2_1
-X_13_ _01_ counter_value_o[1] _04_ VPWR VGND sg13g2_xnor2_1
-X_14_ _05_ counter_value_o[1] counter_value_o[0] enable_i VPWR VGND sg13g2_nand3_1
-X_15_ _02_ counter_value_o[2] _05_ VPWR VGND sg13g2_xnor2_1
-X_16_ _06_ counter_value_o[1] counter_value_o[0] counter_value_o[2] enable_i VPWR 
+X_07_ _00_ counter_value_o[0] enable_i VPWR VGND sg13g2_xor2_1
+X_08_ _04_ counter_value_o[0] enable_i VPWR VGND sg13g2_nand2_1
+X_09_ _01_ counter_value_o[1] _04_ VPWR VGND sg13g2_xnor2_1
+X_10_ _05_ counter_value_o[0] counter_value_o[1] enable_i VPWR VGND sg13g2_nand3_1
+X_11_ _02_ counter_value_o[2] _05_ VPWR VGND sg13g2_xnor2_1
+X_12_ _06_ counter_value_o[0] counter_value_o[1] counter_value_o[2] enable_i VPWR 
 + VGND
 + sg13g2_nand4_1
-X_17_ _03_ counter_value_o[3] _06_ VPWR VGND sg13g2_xnor2_1
-X\counter_0.n20[0]$_DFFE_PN0P_  counter_value_o[0] _10_ clock_i _00_ reset_n_i VPWR 
-+ VGND
-+ sg13g2_dfrbp_1
-X\counter_0.n20[1]$_DFFE_PN0P_  counter_value_o[1] _09_ clock_i _01_ reset_n_i VPWR 
-+ VGND
-+ sg13g2_dfrbp_1
-X\counter_0.n20[2]$_DFFE_PN0P_  counter_value_o[2] _08_ clock_i _02_ reset_n_i VPWR 
-+ VGND
-+ sg13g2_dfrbp_1
-X\counter_0.n20[3]$_DFFE_PN0P_  counter_value_o[3] _07_ clock_i _03_ reset_n_i VPWR 
-+ VGND
-+ sg13g2_dfrbp_1
+X_13_ _03_ counter_value_o[3] _06_ VPWR VGND sg13g2_xnor2_1
+X\counter_0.n20[0]$_DFFE_PN0P_  counter_value_o[0] clock_i _00_ reset_n_i VPWR VGND sg13g2_dfrbpq_1
+X\counter_0.n20[1]$_DFFE_PN0P_  counter_value_o[1] clock_i _01_ reset_n_i VPWR VGND sg13g2_dfrbpq_1
+X\counter_0.n20[2]$_DFFE_PN0P_  counter_value_o[2] clock_i _02_ reset_n_i VPWR VGND sg13g2_dfrbpq_1
+X\counter_0.n20[3]$_DFFE_PN0P_  counter_value_o[3] clock_i _03_ reset_n_i VPWR VGND sg13g2_dfrbpq_1
 
 .ends
 .end

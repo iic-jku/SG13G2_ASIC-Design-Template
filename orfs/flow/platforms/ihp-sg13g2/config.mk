@@ -129,7 +129,7 @@ export FILL_CONFIG = $(PLATFORM_DIR)/fill.json
 #export TEMPLATE_PGA_CFG ?= $(PLATFORM_DIR)/template_pga.cfg
 
 # OpenRCX extRules
-export RCX_RULES = $(PLATFORM_DIR)/rcx_patterns.rules
+export RCX_RULES = $(PLATFORM_DIR)/IHP_rcx_patterns.rules
 
 # ---------------------------------------------------------
 #  IR Drop

@@ -65,5 +65,5 @@ report_metrics 6 "finish"
 
 # Save a final image if openroad is compiled with the gui
 if { [ord::openroad_gui_compiled] } {
-  gui::show "source $::env(SCRIPTS_DIR)/save_images.tcl" false
+  # gui::show "source $::env(SCRIPTS_DIR)/save_images.tcl" false
 }

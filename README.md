@@ -64,6 +64,12 @@ Alternatively, one can post-process the data (e.g. down-sample or cut out data) 
 
 **Figure 2**: Ngspice data plotted with Python.
 
+## **ToDo**
+
+- [ ] add LibreLane Support
+- [ ] Post-Layout Simulation
+- [ ] RTL Simulation
+
 ## **Cite this work**
 
 ```
@@ -73,9 +79,3 @@ Alternatively, one can post-process the data (e.g. down-sample or cut out data) 
 	year={2025},
 	url={https://github.com/simi1505/SG13G2_ASIC-Design-Template}}
 ```
-
-## **ToDo**
-
-- [ ] add LibreLane Support
-- [ ] Post-Layout Simulation
-- [ ] RTL Simulation

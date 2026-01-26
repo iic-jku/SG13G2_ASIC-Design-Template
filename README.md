@@ -1,6 +1,6 @@
 # An Open-Source ASIC Design Template for the SG13G2 IHP Open-PDK.
 
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.18378634.svg)](https://doi.org/10.5281/zenodo.18378634)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.18378633.svg)](https://doi.org/10.5281/zenodo.18378633)
 
 ## Introduction
 
@@ -84,6 +84,7 @@ Alternatively, one can post-process the data (e.g. down-sample or cut out data) 
 	month = jan,
 	title = {{GitHub Repository for an Open-Source ASIC Design Template for the SG13G2 IHP Open-PDK}},
 	url = {https://github.com/simi1505/SG13G2_ASIC-Design-Template/tree/2025.12},
+	doi = {10.5281/zenodo.18378633},
 	year = {2026}
 }
 ```

@@ -79,9 +79,11 @@ Alternatively, one can post-process the data (e.g. down-sample or cut out data) 
 ## **Cite this work**
 
 ```
-@online{Dorrer_2025_ASIC_Template,
-	author={Simon Dorrer},
-	title={{A template GitHub repository for analog mixed-signal ASIC design with the SG13G2 PDK}},
-	year={2025},
-	url={https://github.com/simi1505/SG13G2_ASIC-Design-Template}}
+@software{Dorrer_2026_ASIC_Template,
+	author = {Dorrer, Simon},
+	month = jan,
+	title = {{GitHub Repository for an Open-Source ASIC Design Template for the SG13G2 IHP Open-PDK}},
+	url = {https://github.com/simi1505/SG13G2_ASIC-Design-Template/tree/2025.12},
+	year = {2026}
+}
 ```

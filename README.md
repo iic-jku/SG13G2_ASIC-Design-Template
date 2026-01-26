@@ -21,6 +21,8 @@ I have also made a short video on how to use this repo: https://www.youtube.com/
 
 If you want to use other OpenROAD-compatible PDKs, just add the corresponding files to the `orfs/flow/platforms` folder. These files can be found at https://github.com/The-OpenROAD-Project/OpenROAD-flow-scripts.
 
+This template repository should update itself automatically using GitHub actions and `update_orfs.sh`.
+
 ## How to use this template for your design
 
 #### Step-by-step introduction:

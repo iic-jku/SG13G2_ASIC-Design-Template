@@ -57,6 +57,8 @@ CONFIG_FILE="$TARGET_DIR/flow/platforms/ihp-sg13g2/config.mk"
 sed -i 's|# export RCX_RULES = $(PLATFORM_DIR)/rcx_patterns.rules|export RCX_RULES = $(PLATFORM_DIR)/IHP_rcx_patterns.rules|g' "$CONFIG_FILE"
 # Also cover the case where it might not be commented in a future update
 sed -i 's|^export RCX_RULES = $(PLATFORM_DIR)/rcx_patterns.rules|export RCX_RULES = $(PLATFORM_DIR)/IHP_rcx_patterns.rules|g' "$CONFIG_FILE"
+# Delete rcx_patterns.rules
+rm -rf "$TARGET_DIR/flow/platforms/ihp-sg13g2/rcx_patterns.rules"
 
 # 8. Copy flow/scripts
 echo "Updating flow/scripts..."

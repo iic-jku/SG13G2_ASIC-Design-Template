@@ -222,7 +222,7 @@ Fanout     Cap    Slew   Delay    Time   Description
 finish report_checks -unconstrained
 --------------------------------------------------------------------------
 Startpoint: reset_n_i (input port clocked by clock_i)
-Endpoint: counter_0/n20[0]$_DFFE_PP0P_
+Endpoint: counter_0/n20[3]$_DFFE_PP0P_
           (recovery check against rising-edge clock clock_i)
 Path Group: asynchronous
 Path Type: max
@@ -243,7 +243,7 @@ Fanout     Cap    Slew   Delay    Time   Description
                   0.01    0.00   25.09 v counter_0/_08_/A (sg13g2_inv_1)
      4    0.02    0.10    0.09   25.17 ^ counter_0/_08_/Y (sg13g2_inv_1)
                                          counter_0/_00_ (net)
-                  0.10    0.00   25.17 ^ counter_0/n20[0]$_DFFE_PP0P_/RESET_B (sg13g2_dfrbpq_1)
+                  0.10    0.00   25.17 ^ counter_0/n20[3]$_DFFE_PP0P_/RESET_B (sg13g2_dfrbpq_1)
                                  25.17   data arrival time
 
                         125.00  125.00   clock clock_i (rise edge)
@@ -253,10 +253,10 @@ Fanout     Cap    Slew   Delay    Time   Description
                   0.00    0.00  125.00 ^ clkbuf_0_clock_i/A (sg13g2_buf_2)
      2    0.01    0.03    0.06  125.06 ^ clkbuf_0_clock_i/X (sg13g2_buf_2)
                                          clknet_0_clock_i (net)
-                  0.03    0.00  125.06 ^ clkbuf_1_1__f_clock_i/A (sg13g2_buf_2)
-     2    0.01    0.03    0.07  125.13 ^ clkbuf_1_1__f_clock_i/X (sg13g2_buf_2)
-                                         clknet_1_1__leaf_clock_i (net)
-                  0.03    0.00  125.13 ^ counter_0/n20[0]$_DFFE_PP0P_/CLK (sg13g2_dfrbpq_1)
+                  0.03    0.00  125.06 ^ clkbuf_1_0__f_clock_i/A (sg13g2_buf_2)
+     2    0.01    0.03    0.07  125.13 ^ clkbuf_1_0__f_clock_i/X (sg13g2_buf_2)
+                                         clknet_1_0__leaf_clock_i (net)
+                  0.03    0.00  125.13 ^ counter_0/n20[3]$_DFFE_PP0P_/CLK (sg13g2_dfrbpq_1)
                           0.00  125.13   clock reconvergence pessimism
                          -0.14  124.99   library recovery time
                                 124.99   data required time

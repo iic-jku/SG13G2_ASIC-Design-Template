@@ -21,7 +21,7 @@ SRC_FOLDER=${SRC_FOLDER:-.}
 mkdir -p "$name"
 
 # Convert Verilog (.v) file to Vlog (.vp) file
-vlog2Verilog "$ORFS"/1_synth.v -o "$name"/"$name".vp -l $PDKPATH/libs.ref/sg13g2_stdcell/lef/sg13g2_stdcell.lef -v "VPWR,VPB" -g "VGND,VNB"
+vlog2Verilog "$ORFS"/1_2_yosys.v -o "$name"/"$name".vp -l $PDKPATH/libs.ref/sg13g2_stdcell/lef/sg13g2_stdcell.lef -v "VPWR,VPB" -g "VGND,VNB"
 
 # Convert Vlog (.vp) file to spice (.spi or .spice) file
 vlog2Spice "$name"/"$name".vp -l $PDKPATH/libs.ref/sg13g2_stdcell/spice/sg13g2_stdcell.spice -o "$name"/"$name".spice

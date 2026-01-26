@@ -3,7 +3,7 @@
 # =====================================================
 # Author: Simon Dorrer
 # Last Modified: 26.01.2026
-# Description: This .sh file downloads the latest OpenROAD-flow-scripts GitHub repo and insert the required file to the template repo.
+# Description: This .sh file downloads the latest OpenROAD-flow-scripts GitHub repo and updates the template repo.
 # =====================================================
 
 set -e -x
@@ -14,10 +14,12 @@ cd $(dirname "$0")
 ORFS_REPO_URL="https://github.com/The-OpenROAD-Project/OpenROAD-flow-scripts.git"
 TEMP_DIR="orfs_temp_download"
 TARGET_DIR="orfs"
+MAKEFILE_PATH="$TARGET_DIR/flow/Makefile"
 
 # 1. Download ORFS
 # Clone depth 1 to save time/bandwidth (we only need the latest files)
 echo "Downloading OpenROAD-flow-scripts..."
+rm -rf "$TEMP_DIR" # Remove old in case an error happened during the execution of this script
 git clone --depth 1 "$ORFS_REPO_URL" "$TEMP_DIR"
 
 # 2. Update env.sh (optional)

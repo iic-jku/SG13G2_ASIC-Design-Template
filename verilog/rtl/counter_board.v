@@ -1,4 +1,4 @@
-module counter_4_16
+module counter_Brtl_Lcounter_4_16
   (input  clock_i,
    input  reset_i,
    input  enable_i,
@@ -45,7 +45,7 @@ module counter_board
   /* ../../vhdl/rtl/counter_board.vhd:33:18  */
   assign n1 = ~reset_n_i;
   /* ../../vhdl/rtl/counter_board.vhd:36:9  */
-  counter_4_16 counter_0 (
+  counter_Brtl_Lcounter_4_16 counter_0 (
     .clock_i(clock_i),
     .reset_i(reset),
     .enable_i(enable_i),

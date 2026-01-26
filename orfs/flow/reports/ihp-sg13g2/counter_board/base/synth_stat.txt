@@ -1,0 +1,80 @@
+
+19. Printing statistics.
+
+=== counter_Brtl_Lcounter_4_16 ===
+
+        +----------Local Count, excluding submodules.
+        |        +-Local Area, excluding submodules.
+        |        | 
+       12        - wires
+       15        - wire bits
+        4        - public wires
+        7        - public wire bits
+        4        - ports
+        7        - port bits
+       12  286.675 cells
+        4  195.955   sg13g2_dfrbpq_1
+        1    5.443   sg13g2_inv_1
+        1    7.258   sg13g2_nand2_1
+        1    9.072   sg13g2_nand3_1
+        1   10.886   sg13g2_nand4_1
+        3   43.546   sg13g2_xnor2_1
+        1   14.515   sg13g2_xor2_1
+
+   Chip area for module '\counter_Brtl_Lcounter_4_16': 286.675200
+     of which used for sequential elements: 195.955200 (68.35%)
+
+=== counter_board ===
+
+        +----------Local Count, excluding submodules.
+        |        +-Local Area, excluding submodules.
+        |        | 
+        5        - wires
+        8        - wire bits
+        5        - public wires
+        8        - public wire bits
+        4        - ports
+        7        - port bits
+        1    7.258 cells
+        1    7.258   sg13g2_inv_2
+        1        - submodules
+        1        -   counter_Brtl_Lcounter_4_16
+
+   Chip area for module '\counter_board': 7.257600
+     of which used for sequential elements: 0.000000 (0.00%)
+
+=== design hierarchy ===
+
+        +----------Count including submodules.
+        |        +-Area including submodules.
+        |        | 
+       13  293.933 counter_board
+       12  286.675 counter_Brtl_Lcounter_4_16
+
+        +----------Count including submodules.
+        |        +-Area including submodules.
+        |        | 
+       17        - wires
+       23        - wire bits
+        9        - public wires
+       15        - public wire bits
+        8        - ports
+       14        - port bits
+        -        - memories
+        -        - memory bits
+        -        - processes
+       13  293.933 cells
+        4  195.955   sg13g2_dfrbpq_1
+        1    5.443   sg13g2_inv_1
+        1    7.258   sg13g2_inv_2
+        1    7.258   sg13g2_nand2_1
+        1    9.072   sg13g2_nand3_1
+        1   10.886   sg13g2_nand4_1
+        3   43.546   sg13g2_xnor2_1
+        1   14.515   sg13g2_xor2_1
+        1  286.675 submodules
+        1  286.675   counter_Brtl_Lcounter_4_16
+
+   Chip area for top module '\counter_board': 293.932800
+     of which used for sequential elements: 195.955200 (66.67%)
+

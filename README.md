@@ -1,5 +1,7 @@
 # An Open-Source ASIC Design Template for the SG13G2 IHP Open-PDK.
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.18015139.svg)](https://doi.org/10.5281/zenodo.18015139)
+
 ## Introduction
 
 This template repository is suited for analog mixed-signal design with the 130nm BiCMOS open-source SG13G2 PDK by IHP and the IIC-OSIC-Tools by the Institute for Integrated Circuits and Quantum Computing (IICQC), Johannes Kepler University, Linz (JKU).

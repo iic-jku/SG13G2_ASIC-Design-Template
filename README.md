@@ -83,7 +83,7 @@ Alternatively, one can post-process the data (e.g. down-sample or cut out data) 
 	author = {Dorrer, Simon},
 	month = jan,
 	title = {{GitHub Repository for an Open-Source ASIC Design Template for the SG13G2 IHP Open-PDK}},
-	url = {https://github.com/simi1505/SG13G2_ASIC-Design-Template/tree/2025.12},
+	url = {https://github.com/iic-jku/SG13G2_ASIC-Design-Template/tree/2025.12},
 	doi = {10.5281/zenodo.18378633},
 	year = {2026}
 }

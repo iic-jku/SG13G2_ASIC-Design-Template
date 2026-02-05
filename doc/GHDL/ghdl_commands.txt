@@ -1,0 +1,42 @@
+-- Simulation
+make run TESTBENCH=<EntityNameDerTestbench>
+
+-- Working Example SeqCir
+-- COUNTER
+ghdl -a counter_ea.vhd
+ghdl --synth -gCOUNTER_BITWIDTH=4 -gCOUNTER_MAX=10 --out=verilog counter > counter_ea.v
+yosys
+read_verilog filename.v
+proc
+opt
+show
+stat
+write_json filename.write_json
+CTRL + C
+netlistsvg filename.json
+
+-- FSM
+ghdl -a fsm_ea.vhd
+ghdl --synth -gCOUNTER_BITWIDTH=4 -gCOUNTER_MAX=10 --out=verilog fsm > fsm_ea.v
+yosys
+read_verilog filename.v
+proc
+opt
+show
+stat
+write_json filename.write_json
+CTRL + C
+netlistsvg filename.json
+
+-- SeqCir
+write convert.sh filename
+execute with "sh convert.sh"
+-- ===================================================================================
+
+-- Not working due to generic entity:
+yosys -m ghdl
+ghdl counter_ea.vhd -e counter; synth
+write_verilog counter_ea.v
+
+-- Or one liner:
+yosys -m ghdl -p 'ghdl filename.vhd -e entityname; write_verilog filename.v'

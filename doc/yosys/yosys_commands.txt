@@ -1,0 +1,75 @@
+https://yosyshq.readthedocs.io/projects/yosys/en/latest/
+
+iic-vlint.sh <file.v>
+./simulate.sh <file>
+// ======================================
+
+yosys
+read_verilog <FILE.v>
+proc
+opt
+show
+stat
+// ======================================
+
+yosys
+read_verilog <FILE.v>
+proc
+prep -top my_top_module (top module with all inner modules)
+prep -top my_top_module -flatten (low level logic)
+write_json <OUTPUTNAME.json>
+netlistsvg <FILE.json> -o <FILE.svg> (NICHT IN YOSYS)
+erstellt out.svg mit Grafik
+// ======================================
+
+synth -top <verilog>
+// ======================================
+
+htop
+// ======================================
+
+Openlane
+
+MIN_CLK = fs_max * OSR_MAX = 44.1kHz * 256 = 11.3MHz
+--> MIN_CLK = 12MHz --> CLK_PERIOD mit 83,3ns --> CLK_PERIOD mit 50ns)
+
+Chip erstellen:
+Ordner in Name des Projekts umbenennen --> openlane zu audiodac
+
+ll --> Auflistung der Elemente
+
+JSON File Pfad einstellen
+
+"flow.tcl -design gcd -init_design_config" generiert default .json file
+
+"flow.tcl -designs ." eingeben
+ODER
+"flow.tcl -designs . -synth_explore" eingeben
+
+cd runs/RUN_XYZ/results/final/gds
+
+magic <name>.gds
+ODER
+klayout <name>.gds
+
+schwarzes Layout ausblenden (1. Reihe, 3. von links)
+
+unten links klicken + oben rechts rechtsklicken für BOX dann X
+
+zoomen mit einer box und strg+Z
+
+full view (f)
+
+PRETL BSP:
+/* Hier hat er ein Beispiel kopiert zum Herzeigen */
+Chip Design Beispiel:
+cd /foss/tools/openlane
+cd designs/
+cp -R spm /foss/designs/
+cd
+dd
+cd spm/
+Design Flow starten:
+/foss/designs -flow.tcl -design spm
+magic <FILE>.gds
+// ======================================

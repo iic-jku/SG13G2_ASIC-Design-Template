@@ -37,7 +37,7 @@ save_image -resolution $resolution $::env(REPORTS_DIR)/final_routing.webp
 
 # The placement view without routing
 gui::set_display_controls "Shape Types/Routing/*" visible false
-gui::set_display_controls "Instances/Physical/*" visible false
+gui::set_display_controls "Instances/Physical/Fill cell" visible false
 gui::set_display_controls "Misc/Instances/*" visible false
 save_image -resolution $resolution $::env(REPORTS_DIR)/final_placement.webp
 
@@ -113,8 +113,12 @@ gui::set_display_controls "Nets/*" visible false
 gui::set_display_controls "Instances/*" visible true
 gui::set_display_controls "Shape Types/Routing/*" visible false
 
-gui::show_worst_path
-save_image -resolution $resolution $::env(REPORTS_DIR)/final_worst_path.webp
+if { [llength [info commands gui::show_worst_path]] > 0 } {
+  gui::show_worst_path
+  save_image -resolution $resolution $::env(REPORTS_DIR)/final_worst_path.webp
+} else {
+  puts "gui::show_worst_path not available; skipping worst path image."
+}
 gui::set_display_controls "Timing Path/*" visible false
 
 gui::restore_display_controls

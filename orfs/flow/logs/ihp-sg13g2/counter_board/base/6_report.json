@@ -58,7 +58,8 @@
 	"finish__design__rows:CoreSite": 15,
 	"finish__design__sites": 1860,
 	"finish__design__sites:CoreSite": 1860,
-	"finish__flow__warnings__count": 0,
+	"finish__flow__warnings__count": 1,
 	"finish__flow__errors__count": 0,
-	"finish__flow__warnings__type_count": 0
+	"finish__flow__warnings__count:GUI-0076": 1,
+	"finish__flow__warnings__type_count": 1
 }

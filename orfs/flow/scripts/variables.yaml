@@ -1129,7 +1129,7 @@ RTLMP_NOTCH_WT:
   description: >
     Weight for the notch, or the existence of dead space that cannot be used
     for placement and routing.
-  default: 10.0
+  default: 50.0
   stages:
     - floorplan
 RTLMP_RPT_DIR:
@@ -1163,15 +1163,6 @@ RTLMP_FENCE_UY:
     Defines the upper right Y coordinate for the global fence bounding box in
     microns.
   default: 0.0
-  stages:
-    - floorplan
-RTLMP_DATA_FLOW_DRIVEN:
-  description: >
-    Specifies whether the macro placer should use data-flow driven macro placement.
-    Data-flow driven works by adding a wire length component that takes into account
-    the data paths of the design. This optional can increase run time significantly
-    for large designs.
-  default: 1
   stages:
     - floorplan
 RTLMP_ARGS:

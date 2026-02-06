@@ -23,6 +23,8 @@ chmod +x \
 	verilog/rtl/yosys_stats.sh \
 	verilog/sim/simulate_verilog.sh \
 	orfs/env.sh \
-	orfs/run_orfs.sh
+	orfs/run_orfs.sh \
+	orfs/flow/scripts/*.sh \
+	orfs/flow/scripts/*.py
 
-echo "Done! Run 'git commit -m \"Make files executable\"' and 'git push' to save changes."
+echo "Done! Run 'git add -A', 'git commit -m \"Make files executable\"' and 'git push' to save changes."

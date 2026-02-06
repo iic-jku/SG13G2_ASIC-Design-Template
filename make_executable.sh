@@ -25,4 +25,4 @@ chmod +x \
 	orfs/env.sh \
 	orfs/run_orfs.sh
 
-echo "Done."
+echo "Done! Run 'git commit -m \"Make files executable\"' and 'git push' to save changes."

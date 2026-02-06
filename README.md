@@ -75,6 +75,8 @@ Alternatively, one can post-process the data (e.g. down-sample or cut out data) 
 - [ ] add LibreLane Support
 - [ ] Post-Layout Simulation
 - [ ] RTL Simulation
+- [ ] Gate-Level Simulation with cocotb
+- [ ] GDS Renderings with Blender
 
 ## **Cite this work**
 

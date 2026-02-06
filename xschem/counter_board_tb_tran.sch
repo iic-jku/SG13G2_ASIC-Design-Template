@@ -8,13 +8,13 @@ E {}
 B 2 1620 -1060 2420 -660 {flags=graph
 y1=0.00011
 y2=1.5
-ypos1=-0.2248735
-ypos2=1.2750165
+ypos1=0.00011
+ypos2=1.5
 divy=5
 subdivy=1
 unity=1
-x1=4e-07
-x2=4.4e-06
+x1=0
+x2=4e-06
 divx=5
 subdivx=1
 xlabmag=1.0
@@ -43,8 +43,8 @@ ypos2=1.5
 divy=5
 subdivy=1
 unity=1
-x1=4e-07
-x2=4.4e-06
+x1=0
+x2=4e-06
 divx=5
 subdivx=1
 xlabmag=1.0
@@ -150,7 +150,7 @@ op
 remzerovec
 write counter_board_tb_tran.raw
 
-* quit
+quit
 .endc"}
 C {devices/lab_wire.sym} 680 -800 0 0 {name=p1 sig_type=std_logic lab=reset_n}
 C {devices/gnd.sym} 680 -660 0 0 {name=l2 lab=GND}

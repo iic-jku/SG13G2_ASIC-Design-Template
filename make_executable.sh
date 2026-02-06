@@ -1,25 +1,28 @@
 #!/bin/bash
 
 # =============================================================================
-# Make All Files Executable in Git
+# Make Selected Scripts Executable
 # =============================================================================
 #
-# This script:
-# 1. Finds all files in the current directory and subdirectories (excluding .git)
-# 2. Marks each file as executable in Git's index (100644 -> 100755)
-# 3. Stages these permission changes (they'll appear in git status as modified)
-#
-# After running:
-#   git commit -m "Make files executable"
-#   git push
-#
-# Result: Anyone who clones or pulls the repo will get files with the
-# executable bit set (100755), meaning they can run scripts directly
-# with ./script.sh without needing to chmod first.
+# This script sets executable permissions only for the listed scripts.
+# Run it from the repository root.
 # =============================================================================
 
-echo "Making all files executable in Git index..."
+set -e
 
-git ls-files | xargs git update-index --chmod=-x
+echo "Making selected scripts executable..."
 
-echo "Done! Run 'git commit -m \"Make files executable\"' and 'git push' to save changes."
+chmod +x \
+	update_orfs.sh \
+	run_all.sh \
+	make_executable.sh \
+	clean_all.sh \
+	xspice/verilog2xspice.sh \
+	vhdl/sim/simulate_vhdl.sh \
+	verilog/rtl/vhdl2verilog.sh \
+	verilog/rtl/yosys_stats.sh \
+	verilog/sim/simulate_verilog.sh \
+	orfs/env.sh \
+	orfs/run_orfs.sh
+
+echo "Done."

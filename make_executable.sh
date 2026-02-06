@@ -20,6 +20,6 @@
 
 echo "Making all files executable in Git index..."
 
-find . -type f -not -path "./.git/*" -exec git update-index --chmod=+x {} \;
+git ls-files | xargs git update-index --chmod=-x
 
-echo "Done! Run 'git commit -m \"Make files executable\"' to save changes."
+echo "Done! Run 'git commit -m \"Make files executable\"' and 'git push' to save changes."

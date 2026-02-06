@@ -1,3 +1,6 @@
 /video
 /xschem/simulations
 /python/plot_simulations/__pycache__
+*.aux
+*.gz
+*.log

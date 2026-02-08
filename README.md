@@ -72,12 +72,15 @@ Alternatively, one can post-process the data (e.g. down-sample or cut out data) 
 
 ## **ToDo**
 
-- [ ] CACE Support
-- [ ] LibreLane Support
-- [ ] Post-Layout Simulation
-- [ ] RTL Simulation
-- [ ] Gate-Level Simulation with cocotb
-- [ ] GDS Renderings with Blender
+It is planned to add scripts or template / reference project files for the following features (help wanted).
+- [ ] `CACE` Support
+- [ ] easy-to-use workflow for DRC / LVS / PEX with `kLayout` / `Magic`
+- [ ] `LibreLane` Support
+- [ ] Post-Layout Simulation with `Spice`
+- [ ] `ngspice` & `verilog` RTL Co-Simulation using `Xschem`: https://www.youtube.com/watch?v=PPd7jkcHOgA
+- [ ] Gate-Level Simulation with `cocotb`
+- [ ] GDS Renderings with `Blender`
+- [ ] Verilog-A Support with `VACASK`
 
 ## **Cite this work**
 

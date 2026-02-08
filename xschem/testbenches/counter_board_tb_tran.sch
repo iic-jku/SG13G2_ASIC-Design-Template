@@ -107,14 +107,16 @@ tclcommand="xschem save; xschem netlist; xschem simulate"
 }
 C {devices/launcher.sym} 1680 -1110 0 0 {name=h1
 descr="Load waves" 
-tclcommand="xschem raw_read $netlist_dir/[file tail [file rootname [xschem get current_name]]].raw tran"
+tclcommand="xschem raw_read $netlist_dir/[file rootname [file tail [xschem get current_name]]].raw tran"
 }
 C {code_shown.sym} 60 -1650 0 0 {name=NGSPICE
 only_toplevel=false
 value="
 *True Mixed Signal Simulation (.xspice)
-.include /foss/designs/SG13G2_ASIC-Design-Template/xspice/counter_board/counter_board.xspice
-.include /foss/designs/SG13G2_ASIC-Design-Template/xspice/counter_board/counter_board_bus.xspice
+*.include /foss/designs/SG13G2_ASIC-Design-Template/xspice/counter_board/counter_board.xspice
+*.include /foss/designs/SG13G2_ASIC-Design-Template/xspice/counter_board/counter_board_bus.xspice
+.include ../../xspice/counter_board/counter_board.xspice
+.include ../../xspice/counter_board/counter_board_bus.xspice
 
 .param temp=27
 .param fclk=8000000

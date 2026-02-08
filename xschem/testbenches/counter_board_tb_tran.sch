@@ -66,7 +66,7 @@ hilight_wave=-1
 linewidth_mult=4
 digital=1
 legend=1}
-T {Testbench for transient analysis - 4-Bit Counter} 560 -1740 0 0 1 1 {}
+T {Testbench for transient analysis - 4-Bit Counter} 600 -1720 0 0 1 1 {}
 N 300 -380 300 -340 {
 lab=GND}
 N 300 -800 300 -760 {
@@ -109,12 +109,10 @@ C {devices/launcher.sym} 1680 -1110 0 0 {name=h1
 descr="Load waves" 
 tclcommand="xschem raw_read $netlist_dir/[file rootname [file tail [xschem get current_name]]].raw tran"
 }
-C {code_shown.sym} 60 -1650 0 0 {name=NGSPICE
+C {code_shown.sym} 60 -1590 0 0 {name=NGSPICE
 only_toplevel=false
 value="
 *True Mixed Signal Simulation (.xspice)
-*.include /foss/designs/SG13G2_ASIC-Design-Template/xspice/counter_board/counter_board.xspice
-*.include /foss/designs/SG13G2_ASIC-Design-Template/xspice/counter_board/counter_board_bus.xspice
 .include ../../xspice/counter_board/counter_board.xspice
 .include ../../xspice/counter_board/counter_board_bus.xspice
 
@@ -132,18 +130,10 @@ plot v(clock) v(enable) v(reset_n)
 plot v(b3) v(b2) v(b1) v(b0)
 
 * Writing Data
-set wr_singlescale
+unset appendwrite
 set wr_vecnames
-
-let clock = clock
-let enable = enable
-let reset_n = reset_n
-let b0 = b0
-let b1 = b1
-let b2 = b2
-let b3 = b3
-
-wrdata /foss/designs/SG13G2_ASIC-Design-Template/python/plot_simulations/data/counter_board_tb_tran.txt clock enable reset_n b0 b1 b2 b3
+set wr_singlescale
+wrdata $PROJECT_PATH/python/plot_simulations/data/counter_board_tb_tran.txt clock enable reset_n b0 b1 b2 b3
 
 set appendwrite
 
@@ -160,11 +150,14 @@ C {devices/lab_wire.sym} 1160 -840 0 0 {name=p3 sig_type=std_logic lab=clock}
 C {devices/lab_wire.sym} 1160 -720 0 0 {name=p4 sig_type=std_logic lab=reset_n}
 C {devices/vsource.sym} 680 -730 0 0 {name=vrst value="pulse(0 1.5 \{1/fclk\} 10p 10p \{0.5/fclk*100\} \{1/fclk*100\})"
 }
-C {devices/code_shown.sym} 1940 -1190 0 0 {name=MODEL only_toplevel=true
+C {devices/code_shown.sym} 1940 -1210 0 0 {name=MODEL only_toplevel=true
 format="tcleval( @value )"
 value="
 .lib cornerMOSlv.lib mos_tt
+.lib cornerMOShv.lib mos_tt
+.lib cornerHBT.lib hbt_typ
 .lib cornerRES.lib res_typ
+.lib cornerDIO.lib dio_tt
 "}
 C {devices/gnd.sym} 1280 -660 0 0 {name=l4 lab=GND}
 C {devices/vdd.sym} 1280 -900 0 0 {name=l5 lab=VDD}

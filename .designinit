@@ -7,3 +7,6 @@ export KLAYOUT_PATH=$PDKPATH/libs.tech/klayout:$PDKPATH/libs.tech/klayout/tech
 
 # Set path for Xschem
 export XSCHEM_USER_LIBRARY_PATH=$DESIGNS/SG13G2_ASIC-Design-Template/xschem
+
+# Set path to Project
+export PROJECT_PATH=$DESIGNS/SG13G2_ASIC-Design-Template

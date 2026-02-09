@@ -78,6 +78,7 @@ It is planned to add scripts or template / reference project files for the follo
 - [ ] `LibreLane` Support
 - [ ] Post-Layout Simulation with `Spice`
 - [ ] `ngspice` & `verilog` RTL Co-Simulation using `Xschem`: https://www.youtube.com/watch?v=PPd7jkcHOgA
+- [ ] RTL Co-Simulation using `SpiceBind`
 - [ ] Gate-Level Simulation with `cocotb`
 - [ ] GDS Renderings with `Blender`
 - [ ] Verilog-A Support with `VACASK`

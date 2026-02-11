@@ -77,7 +77,7 @@ It is planned to add scripts or template / reference project files for the follo
 - [ ] easy-to-use workflow for DRC / LVS / PEX with `kLayout` / `Magic`
 - [ ] `LibreLane` Support
 - [ ] Post-Layout Simulation with `Spice`
-- [ ] `ngspice` & `verilog` RTL Co-Simulation using `Xschem`: https://www.youtube.com/watch?v=PPd7jkcHOgA
+- [ ] `ngspice` & `verilog` RTL Co-Simulation using `Xschem`: https://www.youtube.com/watch?v=PPd7jkcHOgA / https://github.com/edneymatheus/ams-counter-xschem-tutorial
 - [ ] RTL Co-Simulation using `SpiceBind`
 - [ ] Gate-Level Simulation with `cocotb`
 - [ ] GDS Renderings with `Blender`

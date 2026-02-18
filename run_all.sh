@@ -88,6 +88,9 @@ ORFS=${ORFS:-orfs}
 XSPICE=${XSPICE:-xspice}
 SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)
 
+# Disable formal equivalence check (kepler-formal not installed)
+export LEC_CHECK=0
+
 # First, clean all
 ./clean_all.sh "$name" || true
 

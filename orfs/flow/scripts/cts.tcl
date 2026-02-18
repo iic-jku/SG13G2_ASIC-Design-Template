@@ -61,7 +61,7 @@ if { !$::env(SKIP_CTS_REPAIR_TIMING) } {
   if { $::env(EQUIVALENCE_CHECK) } {
     write_eqy_verilog 4_before_rsz.v
   }
-  if { [env_var_exists_and_non_empty LEC_CHECK] } {
+  if { $::env(LEC_CHECK) } {
     write_lec_verilog 4_before_rsz_lec.v
   }
 
@@ -70,7 +70,7 @@ if { !$::env(SKIP_CTS_REPAIR_TIMING) } {
   if { $::env(EQUIVALENCE_CHECK) } {
     run_equivalence_test
   }
-  if { [env_var_exists_and_non_empty LEC_CHECK] } {
+  if { $::env(LEC_CHECK) } {
     write_lec_verilog 4_after_rsz_lec.v
     run_lec_test 4_rsz 4_before_rsz_lec.v 4_after_rsz_lec.v
   }

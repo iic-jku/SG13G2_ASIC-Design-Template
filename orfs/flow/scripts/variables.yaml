@@ -1295,3 +1295,14 @@ WRITE_ODB_AND_SDC_EACH_STAGE:
   stages:
     - All stages
   default: 1
+LEC_CHECK:
+  description: >
+    Perform a formal equivalence check between before and after netlists.
+  default: 1
+  stages:
+    - cts
+REMOVE_CELLS_FOR_LEC:
+  description: >
+    String patterns directly passed to write_verilog -remove_cells <> for
+    lec checks.
+  type: string

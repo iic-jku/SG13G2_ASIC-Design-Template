@@ -154,4 +154,4 @@ export CDL_FILE ?= $(PLATFORM_DIR)/cdl/sg13g2_stdcell.cdl
 
 # SRAM macros have empty placeholder cells included. Just ignore them to not
 # thrown an error.
-export GDS_ALLOW_EMPTY = RM_IHPSG13_1P_BITKIT_16x2_(CORNER|EDGE_TB|LE_con_corner|LE_con_edge_lr|LE_con_tap_lr|POWER_ramtap|TAP|TAP_LR)
+export GDS_ALLOW_EMPTY = RM_IHPSG13_\dP_BITKIT_16x2_(CORNER|EDGE_TB|LE_con_corner|LE_con_edge_lr|LE_con_tap_lr|POWER_ramtap|TAP|TAP_LR)

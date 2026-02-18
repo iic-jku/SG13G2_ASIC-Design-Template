@@ -31,7 +31,7 @@ KLAYOUT_CMD=${KLAYOUT_CMD:-/usr/bin/klayout}
 
 XSOCK=/tmp/.X11-unix
 XAUTH=/tmp/.docker.xauth
-xauth nlist :0 | sed -e 's/^..../ffff/' | xauth -f $XAUTH nmerge -
+xauth nlist $DISPLAY | sed -e 's/^..../ffff/' | xauth -f $XAUTH nmerge -
 ARGUMENTS=$@
 
 if test -t 0; then

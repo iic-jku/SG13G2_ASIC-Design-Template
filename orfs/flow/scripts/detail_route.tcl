@@ -1,6 +1,7 @@
 utl::set_metrics_stage "detailedroute__{}"
 source $::env(SCRIPTS_DIR)/load.tcl
 load_design 5_1_grt.odb 5_1_grt.sdc
+source_step_tcl PRE DETAIL_ROUTE
 if { ![grt::have_routes] } {
   error "Global routing failed, run `make gui_grt` and load $::global_route_congestion_report \
         in DRC viewer to view congestion"
@@ -69,13 +70,15 @@ if {
   utl::metric_int "antenna_diodes_count" -1
 }
 
-source_env_var_if_exists POST_DETAIL_ROUTE_TCL
+source_step_tcl POST DETAIL_ROUTE
 
 check_antennas -report_file $env(REPORTS_DIR)/drt_antennas.log
 
 if { ![design_is_routed] } {
   error "Design has unrouted nets."
 }
+
+report_design_area
 
 # Don't report metrics as we have not extracted parasitics, which will happen
 # in final so there is no need to repeat it here.

@@ -67,9 +67,6 @@ if { [find_macros] != "" } {
   }
 
   log_cmd rtl_macro_placer {*}$all_args
-
-  source $::env(SCRIPTS_DIR)/placement_blockages.tcl
-  block_channels $blockage_width
 } else {
   puts "No macros found: Skipping macro_placement"
 }

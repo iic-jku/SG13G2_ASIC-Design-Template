@@ -2,6 +2,7 @@ utl::set_metrics_stage "detailedplace__{}"
 source $::env(SCRIPTS_DIR)/load.tcl
 erase_non_stage_variables place
 load_design 3_4_place_resized.odb 2_floorplan.sdc
+source_step_tcl PRE DETAIL_PLACE
 
 source $::env(PLATFORM_DIR)/setRC.tcl
 
@@ -14,7 +15,7 @@ proc do_dpl { } {
   set_placement_padding -global \
     -left $::env(CELL_PAD_IN_SITES_DETAIL_PLACEMENT) \
     -right $::env(CELL_PAD_IN_SITES_DETAIL_PLACEMENT)
-  detailed_placement
+  log_cmd detailed_placement {*}[env_var_or_empty DETAIL_PLACEMENT_ARGS]
 
   if { $::env(ENABLE_DPO) } {
     if { [env_var_exists_and_non_empty DPO_MAX_DISPLACEMENT] } {
@@ -37,5 +38,7 @@ if { $result != 0 } {
 }
 
 report_metrics 3 "detailed place" true false
+
+source_step_tcl POST DETAIL_PLACE
 
 orfs_write_db $::env(RESULTS_DIR)/3_5_place_dp.odb

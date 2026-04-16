@@ -6,7 +6,7 @@ load_design 4_cts.odb 4_cts.sdc
 # This proc is here to allow us to use 'return' to return early from this
 # file which is sourced
 proc global_route_helper { } {
-  source_env_var_if_exists PRE_GLOBAL_ROUTE_TCL
+  source_step_tcl PRE GLOBAL_ROUTE
 
   set res_aware ""
   append_env_var res_aware ENABLE_RESISTANCE_AWARE -resistance_aware 0
@@ -81,6 +81,7 @@ proc global_route_helper { } {
     # Run to get modified net by DPL
     log_cmd global_route -start_incremental
     log_cmd detailed_placement
+    check_placement -verbose
     # Route only the modified net by DPL
     log_cmd global_route -end_incremental {*}$res_aware \
       -congestion_report_file $::env(REPORTS_DIR)/congestion_post_repair_timing.rpt
@@ -99,6 +100,7 @@ proc global_route_helper { } {
   } {
     puts "Repair antennas..."
     repair_antennas -iterations $::env(MAX_REPAIR_ANTENNAS_ITER_GRT)
+    # repair antennas calls DPL internally
     check_placement -verbose
     check_antennas -report_file $::env(REPORTS_DIR)/grt_antennas.log
   }
@@ -113,6 +115,7 @@ proc global_route_helper { } {
   source [file join $::env(SCRIPTS_DIR) "write_ref_sdc.tcl"]
 
   write_guides $::env(RESULTS_DIR)/route.guide
+  source_step_tcl POST GLOBAL_ROUTE
   orfs_write_db $::env(RESULTS_DIR)/5_1_grt.odb
   orfs_write_sdc $::env(RESULTS_DIR)/5_1_grt.sdc
 }

@@ -48,9 +48,9 @@ def parse_args():
         "--output", "-o", required=False, default="metadata.json", help="Output file"
     )
     parser.add_argument("--hier", "-x", action="store_true", help="Hierarchical JSON")
-    parser.add_argument("--logs", help="Path to logs")
-    parser.add_argument("--reports", help="Path to reports")
-    parser.add_argument("--results", help="Path to results")
+    parser.add_argument("--logs", required=True, help="Path to logs")
+    parser.add_argument("--reports", required=True, help="Path to reports")
+    parser.add_argument("--results", required=True, help="Path to results")
     args = parser.parse_args()
 
     return args
@@ -142,16 +142,13 @@ def extractGnuTime(prefix, jsonFile, file):
 #
 def read_sdc(file_name):
     clkList = []
-    sdcFile = None
 
     try:
-        sdcFile = open(file_name, "r")
-    except IOError:
-        print("[WARN] Failed to open file:", file_name)
+        with open(file_name, "r") as sdcFile:
+            lines = sdcFile.readlines()
+    except OSError as e:
+        print(f"[WARN] Failed to open file: {file_name} ({e})")
         return clkList
-
-    lines = sdcFile.readlines()
-    sdcFile.close()
 
     for line in lines:
         if len(line.split()) < 2:
@@ -175,19 +172,19 @@ def read_sdc(file_name):
 
 def is_git_repo(folder=None):
     cmd = ["git", "branch"]
-    if folder is not None:
-        return call(cmd, stderr=STDOUT, stdout=open(os.devnull, "w"), cwd=folder) == 0
-    else:
-        return call(cmd, stderr=STDOUT, stdout=open(os.devnull, "w")) == 0
+    with open(os.devnull, "w") as devnull:
+        if folder is not None:
+            return call(cmd, stderr=STDOUT, stdout=devnull, cwd=folder) == 0
+        else:
+            return call(cmd, stderr=STDOUT, stdout=devnull) == 0
 
 
 def merge_jsons(root_path, output, files):
     paths = sorted(glob(os.path.join(root_path, files)))
     for path in paths:
-        file = open(path, "r")
-        data = json.load(file)
+        with open(path, "r") as file:
+            data = json.load(file)
         output.update(data)
-        file.close()
 
 
 def extract_metrics(
@@ -231,11 +228,12 @@ def extract_metrics(
     # Synthesis
     # =========================================================================
 
-    # The new format (>= 0.57) is: <count> <area> cells
+    # The new format (>= 0.57) with -hierarchy is:
+    #    <count> <area> <local_count> <local_area> cells
     extractTagFromFile(
         "synth__design__instance__count__stdcell",
         metrics_dict,
-        "^\\s+(\\d+)\\s+[-0-9.]+\\s+cells$",
+        "^\\s+(\\d+)\\s+[-0-9.]+\\s+\\S+\\s+\\S+\\s+cells$",
         rptPath + "/synth_stat.txt",
     )
 
@@ -315,6 +313,7 @@ def extract_metrics(
 
     failed = False
     total = timedelta()
+    elapsed_seconds = {}
     for key in metrics_dict:
         if key.endswith("__runtime__total"):
             # Big try block because Hour and microsecond is optional
@@ -341,10 +340,17 @@ def extract_metrics(
             )
             total += delta
 
+            stage = key[: -len("__runtime__total")]
+            elapsed_seconds[stage + "__elapsed_seconds"] = delta.total_seconds()
+
     if failed:
         metrics_dict["total_time"] = "ERR"
+        metrics_dict["total_elapsed_seconds"] = "ERR"
     else:
         metrics_dict["total_time"] = str(total)
+        metrics_dict["total_elapsed_seconds"] = total.total_seconds()
+
+    metrics_dict.update(elapsed_seconds)
 
     metrics_dict = {
         key.replace(":", "__"): value for key, value in metrics_dict.items()

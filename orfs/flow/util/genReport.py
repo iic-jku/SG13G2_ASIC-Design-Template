@@ -170,7 +170,7 @@ def gen_report(name, data):
             args.verbose - 2,
         )
 
-    if len(d["drcs"].keys()) > 0:
+    if len(data["drcs"].keys()) > 0:
         if data["status"] == STATUS_GREEN:
             output += "  Design has the violations under the allowed limit: "
         else:
@@ -264,6 +264,7 @@ for log_dir, dirs, files in sorted(os.walk(LOGS_FOLDER, topdown=False)):
     # check if design ran to completion without errors or warnings
     d["log_errors"] = list()
     d["log_warnings"] = list()
+    d["last_log"] = ""
     for name_ in sorted(files):
         temp_e, temp_w = parse_messages(os.path.join(log_dir, name_))
         d["log_errors"] += temp_e
@@ -295,7 +296,7 @@ for log_dir, dirs, files in sorted(os.walk(LOGS_FOLDER, topdown=False)):
         with open(drc_report_file, "r") as file_:
             for line_ in file_.readlines():
                 if "violation type:" in line_:
-                    type_ = line_.strip("violation type:").strip()
+                    type_ = line_.split("violation type:", 1)[1].strip()
                     if type_ in d["drcs"].keys():
                         d["drcs"][type_] += 1
                     else:

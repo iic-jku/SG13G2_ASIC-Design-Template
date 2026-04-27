@@ -1,5 +1,7 @@
-# settings.mk is not under source control. Put variables into this
-# file to avoid having to adding the to the make command line.
+# Put variables into this file to avoid having to adding
+# the to the make command line.
+#
+# Out of ORFS trees can have their own settings.mk.
 -include settings.mk
 
 # ==============================================================================
@@ -86,7 +88,7 @@ DESIGN_CONFIG ?= ./designs/ihp-sg13g2/counter_board/config.mk
 export DESIGN_CONFIG
 include $(DESIGN_CONFIG)
 
-export DESIGN_DIR ?= $(dir $(DESIGN_CONFIG))
+export DESIGN_DIR ?= $(patsubst %/,%,$(dir $(DESIGN_CONFIG)))
 
 # default value "base" for FLOW_VARIANT and "." for WORK_HOME are duplicated
 # from variables.yaml and variables.mk because we need it
@@ -193,21 +195,25 @@ $(OBJECTS_DIR)/klayout.lyt: $(KLAYOUT_TECH_FILE) $(OBJECTS_DIR)/klayout_tech.lef
 
 .PHONY: do-klayout
 do-klayout:
-ifeq ($(KLAYOUT_ENV_VAR_IN_PATH),valid)
-	SC_LEF_RELATIVE_PATH="$(shell realpath --relative-to=$(RESULTS_DIR) $(SC_LEF))"; \
-	OTHER_LEFS_RELATIVE_PATHS=$$(echo "$(foreach file, $(OBJECTS_DIR)/klayout_tech.lef $(ADDITIONAL_LEFS),<lef-files>$$(realpath --relative-to=$(RESULTS_DIR) $(file))</lef-files>)"); \
-	sed 's,<lef-files>.*</lef-files>,<lef-files>'"$$SC_LEF_RELATIVE_PATH"'</lef-files>'"$$OTHER_LEFS_RELATIVE_PATHS"',g' $(KLAYOUT_TECH_FILE) > $(OBJECTS_DIR)/klayout.lyt
-else
-	sed 's,<lef-files>.*</lef-files>,$(foreach file, $(OBJECTS_DIR)/klayout_tech.lef $(SC_LEF) $(ADDITIONAL_LEFS),<lef-files>$(shell realpath --relative-to=$(RESULTS_DIR) $(file))</lef-files>),g' $(KLAYOUT_TECH_FILE) > $(OBJECTS_DIR)/klayout.lyt
-endif
-	sed -i 's,<map-file>.*</map-file>,$(foreach file, $(FLOW_HOME)/platforms/$(PLATFORM)/*map,<map-file>$(shell realpath $(file))</map-file>),g' $(OBJECTS_DIR)/klayout.lyt
+	@mkdir -p $(dir $(OBJECTS_DIR)/klayout.lyt)
+	$(PYTHON_EXE) $(UTILS_DIR)/generate_klayout_tech.py \
+		--template $(KLAYOUT_TECH_FILE) \
+		--output $(OBJECTS_DIR)/klayout.lyt \
+		--lef-files $(OBJECTS_DIR)/klayout_tech.lef $(SC_LEF) $(ADDITIONAL_LEFS) \
+		--reference-dir $(RESULTS_DIR) \
+		--map-files $(wildcard $(FLOW_HOME)/platforms/$(PLATFORM)/*map)
 
 $(OBJECTS_DIR)/klayout_wrap.lyt: $(KLAYOUT_TECH_FILE) $(OBJECTS_DIR)/klayout_tech.lef
 	$(UNSET_AND_MAKE) do-klayout_wrap
 
 .PHONY: do-klayout_wrap
 do-klayout_wrap:
-	sed 's,<lef-files>.*</lef-files>,$(foreach file, $(OBJECTS_DIR)/klayout_tech.lef $(WRAP_LEFS),<lef-files>$(shell realpath --relative-to=$(OBJECTS_DIR)/def $(file))</lef-files>),g' $(KLAYOUT_TECH_FILE) > $(OBJECTS_DIR)/klayout_wrap.lyt
+	@mkdir -p $(dir $(OBJECTS_DIR)/klayout_wrap.lyt)
+	$(PYTHON_EXE) $(UTILS_DIR)/generate_klayout_tech.py \
+		--template $(KLAYOUT_TECH_FILE) \
+		--output $(OBJECTS_DIR)/klayout_wrap.lyt \
+		--lef-files $(OBJECTS_DIR)/klayout_tech.lef $(WRAP_LEFS) \
+		--reference-dir $(OBJECTS_DIR)/def
 
 $(WRAPPED_LEFS):
 	mkdir -p $(OBJECTS_DIR)/lef $(OBJECTS_DIR)/def
@@ -235,7 +241,7 @@ synth-report: synth
 
 .PHONY: do-synth-report
 do-synth-report:
-	($(TIME_CMD) $(OPENROAD_CMD) $(SCRIPTS_DIR)/synth_metrics.tcl) 2>&1 | tee $(abspath $(LOG_DIR)/1_2_yosys_metrics.log)
+	$(RUN_CMD) --log $(abspath $(LOG_DIR)/1_2_yosys_metrics.log) --tee -- $(OPENROAD_CMD) $(SCRIPTS_DIR)/synth_metrics.tcl
 
 .PHONY: memory
 memory:
@@ -309,17 +315,20 @@ $(OBJECTS_DIR)/copyright.txt:
 	@touch $(OBJECTS_DIR)/copyright.txt
 
 define OPEN_GUI_SHORTCUT
-.PHONY: gui_$(1) open_$(1)
+.PHONY: gui_$(1) open_$(1) web_$(1)
 gui_$(1): gui_$(2)
 open_$(1): open_$(2)
+web_$(1): web_$(2)
 endef
 
 define OPEN_GUI
-.PHONY: open_$(1) gui_$(1)
+.PHONY: open_$(1) gui_$(1) web_$(1)
 open_$(1):
 	$(2)=$(RESULTS_DIR)/$(1) $(OPENROAD_NO_EXIT_CMD) $(SCRIPTS_DIR)/open.tcl
 gui_$(1):
 	$(2)=$(RESULTS_DIR)/$(1) $(OPENROAD_GUI_CMD) $(SCRIPTS_DIR)/open.tcl
+web_$(1):
+	$(2)=$(RESULTS_DIR)/$(1) $(OPENROAD_WEB_CMD) $(SCRIPTS_DIR)/open.tcl
 endef
 
 # Enables "make gui_5_1_grt-failed"
@@ -388,6 +397,8 @@ endef
 
 # Custom target to go from synthesis to placement in a single OpenROAD run
 $(eval $(call do-step,1_3_floorplan_to_place, $(RESULTS_DIR)/1_synth.odb $(RESULTS_DIR)/1_synth.sdc,floorplan_to_place))
+
+$(eval $(call OPEN_GUI_SHORTCUT,yosys,1_2_yosys.v))
 
 .PHONY: floorplan_to_place
 floorplan_to_place: $(RESULTS_DIR)/1_synth.odb $(RESULTS_DIR)/1_synth.sdc
@@ -623,7 +634,7 @@ final: finish
 
 .PHONY: do-finish
 do-finish:
-	$(UNSET_AND_MAKE) do-6_1_fill do-6_1_fill.sdc do-6_final.sdc do-6_report do-gds elapsed
+	$(UNSET_AND_MAKE) do-6_1_fill do-6_1_fill.sdc do-6_final.sdc do-6_report elapsed
 
 .PHONY: generate_abstract
 generate_abstract: $(RESULTS_DIR)/6_final.gds $(RESULTS_DIR)/6_final.def  $(RESULTS_DIR)/6_final.v $(RESULTS_DIR)/6_final.sdc
@@ -633,16 +644,28 @@ generate_abstract: $(RESULTS_DIR)/6_final.gds $(RESULTS_DIR)/6_final.def  $(RESU
 .PHONY: do-generate_abstract
 do-generate_abstract:
 	mkdir -p $(LOG_DIR) $(REPORTS_DIR)
-	($(TIME_CMD) $(OPENROAD_CMD) $(SCRIPTS_DIR)/generate_abstract.tcl -metrics $(LOG_DIR)/generate_abstract.json) 2>&1 | tee $(abspath $(LOG_DIR)/generate_abstract.log)
+	$(RUN_CMD) --log $(abspath $(LOG_DIR)/generate_abstract.log) --tee -- $(OPENROAD_CMD) $(SCRIPTS_DIR)/generate_abstract.tcl -metrics $(LOG_DIR)/generate_abstract.json
 
 .PHONY: clean_abstract
 clean_abstract:
 	rm -f $(RESULTS_DIR)/$(DESIGN_NAME).lib $(RESULTS_DIR)/$(DESIGN_NAME).lef
 
+.PHONY: check-klayout
+check-klayout:
+	@if [ -z "$(KLAYOUT_CMD)" ]; then \
+		echo "Error: KLayout not found. Install KLayout or set KLAYOUT_CMD."; \
+		echo "Hint: KLayout is needed for GDS/DRC/LVS targets."; \
+		exit 1; \
+	fi
+
+.PHONY: gds
+gds: $(GDS_FINAL_FILE)
+
 # Merge wrapped macros using Klayout
 #-------------------------------------------------------------------------------
 $(WRAPPED_GDSOAS): $(OBJECTS_DIR)/klayout_wrap.lyt $(WRAPPED_LEFS)
-	($(TIME_CMD) $(SCRIPTS_DIR)/klayout.sh -zz -rd design_name=$(basename $(notdir $@)) \
+	$(RUN_CMD) --log $(abspath $(LOG_DIR)/6_merge_$(basename $(notdir $@)).log) --tee -- \
+	        $(SCRIPTS_DIR)/klayout.sh -zz -rd design_name=$(basename $(notdir $@)) \
 	        -rd in_def=$(OBJECTS_DIR)/def/$(notdir $(@:$(STREAM_SYSTEM_EXT)=def)) \
 	        -rd in_files="$(ADDITIONAL_GDSOAS)" \
 	        -rd config_file=$(FILL_CONFIG) \
@@ -650,23 +673,24 @@ $(WRAPPED_GDSOAS): $(OBJECTS_DIR)/klayout_wrap.lyt $(WRAPPED_LEFS)
 	        -rd out_file=$@ \
 	        -rd tech_file=$(OBJECTS_DIR)/klayout_wrap.lyt \
 	        -rd layer_map=$(GDS_LAYER_MAP) \
-	        -r $(UTILS_DIR)/def2stream.py) 2>&1 | tee $(abspath $(LOG_DIR)/6_merge_$(basename $(notdir $@)).log)
+	        -r $(UTILS_DIR)/def2stream.py
 
 # Merge GDS using Klayout
 #-------------------------------------------------------------------------------
-$(GDS_MERGED_FILE): $(RESULTS_DIR)/6_final.def $(OBJECTS_DIR)/klayout.lyt $(GDSOAS_FILES) $(WRAPPED_GDSOAS) $(SEAL_GDSOAS)
+$(GDS_MERGED_FILE): check-klayout $(RESULTS_DIR)/6_final.def $(OBJECTS_DIR)/klayout.lyt $(GDSOAS_FILES) $(WRAPPED_GDSOAS) $(SEAL_GDSOAS)
 	$(UNSET_AND_MAKE) do-gds-merged
 
 .PHONY: do-gds-merged
 do-gds-merged:
-	($(TIME_CMD) $(STDBUF_CMD) $(SCRIPTS_DIR)/klayout.sh -zz -rd design_name=$(DESIGN_NAME) \
+	$(RUN_CMD) --log $(abspath $(LOG_DIR)/6_1_merge.log) --tee -- \
+	        $(SCRIPTS_DIR)/klayout.sh -zz -rd design_name=$(DESIGN_NAME) \
 	        -rd in_def=$(RESULTS_DIR)/6_final.def \
 	        -rd in_files="$(GDSOAS_FILES) $(WRAPPED_GDSOAS)" \
 	        -rd seal_file="$(SEAL_GDSOAS)" \
 	        -rd out_file=$(GDS_MERGED_FILE) \
 	        -rd tech_file=$(OBJECTS_DIR)/klayout.lyt \
 	        -rd layer_map=$(GDS_LAYER_MAP) \
-	        -r $(UTILS_DIR)/def2stream.py) 2>&1 | tee $(abspath $(LOG_DIR)/6_1_merge.log)
+	        -r $(UTILS_DIR)/def2stream.py
 
 $(RESULTS_DIR)/6_final.v: $(LOG_DIR)/6_report.log
 
@@ -683,9 +707,10 @@ drc: $(REPORTS_DIR)/6_drc.lyrdb
 
 $(REPORTS_DIR)/6_drc.lyrdb: $(GDS_FINAL_FILE) $(KLAYOUT_DRC_FILE)
 ifneq ($(KLAYOUT_DRC_FILE),)
-	($(TIME_CMD) $(SCRIPTS_DIR)/klayout.sh -zz -rd in_gds="$<" \
+	$(RUN_CMD) --log $(abspath $(LOG_DIR)/6_drc.log) --tee -- \
+	        $(SCRIPTS_DIR)/klayout.sh -zz -rd in_gds="$<" \
 	        -rd report_file=$(abspath $@) \
-	        -r $(KLAYOUT_DRC_FILE)) 2>&1 | tee $(abspath $(LOG_DIR)/6_drc.log)
+	        -r $(KLAYOUT_DRC_FILE)
 	# Hacky way of getting DRV count (don't error on no matches)
 	grep -c "<value>" $@ > $(REPORTS_DIR)/6_drc_count.rpt || [[ $$? == 1 ]]
 else
@@ -693,7 +718,7 @@ else
 endif
 
 $(RESULTS_DIR)/6_final.cdl: $(RESULTS_DIR)/6_final.v
-	($(TIME_CMD) $(OPENROAD_CMD) $(SCRIPTS_DIR)/cdl.tcl) 2>&1 | tee $(abspath $(LOG_DIR)/6_cdl.log)
+	$(RUN_CMD) --log $(abspath $(LOG_DIR)/6_cdl.log) --tee -- $(OPENROAD_CMD) $(SCRIPTS_DIR)/cdl.tcl
 
 $(OBJECTS_DIR)/6_final_concat.cdl: $(RESULTS_DIR)/6_final.cdl $(CDL_FILE)
 	cat $^ > $@
@@ -703,10 +728,11 @@ lvs: $(RESULTS_DIR)/6_lvs.lvsdb
 
 $(RESULTS_DIR)/6_lvs.lvsdb: $(GDS_FINAL_FILE) $(KLAYOUT_LVS_FILE) $(OBJECTS_DIR)/6_final_concat.cdl
 ifneq ($(KLAYOUT_LVS_FILE),)
-	($(TIME_CMD) $(SCRIPTS_DIR)/klayout.sh -b -rd in_gds="$<" \
+	$(RUN_CMD) --log $(abspath $(LOG_DIR)/6_lvs.log) --tee -- \
+	        $(SCRIPTS_DIR)/klayout.sh -b -rd in_gds="$<" \
 	        -rd cdl_file=$(abspath $(OBJECTS_DIR)/6_final_concat.cdl) \
 	        -rd report_file=$(abspath $@) \
-	        -r $(KLAYOUT_LVS_FILE)) 2>&1 | tee $(abspath $(LOG_DIR)/6_lvs.log)
+	        -r $(KLAYOUT_LVS_FILE)
 else
 	echo "LVS not supported on this platform" > $@
 endif
@@ -764,7 +790,7 @@ nuke: clean_test clean_issues
 # DEF/GDS/OAS viewer shortcuts
 #-------------------------------------------------------------------------------
 .PHONY: $(foreach file,$(RESULTS_DEF) $(RESULTS_GDS) $(RESULTS_OAS),klayout_$(file))
-$(foreach file,$(RESULTS_DEF) $(RESULTS_GDS) $(RESULTS_OAS),klayout_$(file)): klayout_%: $(OBJECTS_DIR)/klayout.lyt
+$(foreach file,$(RESULTS_DEF) $(RESULTS_GDS) $(RESULTS_OAS),klayout_$(file)): klayout_%: check-klayout $(OBJECTS_DIR)/klayout.lyt
 	$(SCRIPTS_DIR)/klayout.sh -nn $(OBJECTS_DIR)/klayout.lyt $(RESULTS_DIR)/$*
 
 $(eval $(call OPEN_GUI_SHORTCUT,synth,1_synth.odb))
@@ -777,6 +803,7 @@ $(eval $(call OPEN_GUI_SHORTCUT,final,6_final.odb))
 
 $(foreach file,$(RESULTS_DEF),$(eval $(call OPEN_GUI,$(file),DEF_FILE)))
 $(foreach file,$(RESULTS_ODB),$(eval $(call OPEN_GUI,$(file),ODB_FILE)))
+$(foreach file,$(RESULTS_V),$(eval $(call OPEN_GUI,$(file),V_FILE)))
 
 # Write a def for the corresponding odb
 $(foreach file,$(RESULTS_ODB),$(file).def): %.def:

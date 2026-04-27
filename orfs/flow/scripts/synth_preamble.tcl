@@ -44,7 +44,7 @@ proc read_design_sources { } {
   }
 
   if { [env_var_equals SYNTH_HDL_FRONTEND slang] } {
-    plugin -i slang
+    plugin -i $::env(SLANG_PLUGIN_PATH)
 
     set slang_args [list \
       -D SYNTHESIS --keep-hierarchy --compat=vcs --ignore-assertions --top $::env(DESIGN_NAME) \
@@ -61,6 +61,16 @@ proc read_design_sources { } {
     # Apply top-level parameters
     dict for {key value} [env_var_or_empty VERILOG_TOP_PARAMS] {
       lappend slang_args -G "$key=$value"
+    }
+
+    # Automatically blackbox macros from ADDITIONAL_LIBS so that
+    # any competing Verilog definitions in the source files are
+    # ignored in favor of the liberty view, consistent with the
+    # behavior of the builtin Verilog frontend.
+    if { [env_var_exists_and_non_empty ADDITIONAL_LIBS] } {
+      foreach m [get_liberty_cell_names] {
+        lappend slang_args --blackboxed-module "$m"
+      }
     }
 
     # Apply module blackboxing based on module names as they appear

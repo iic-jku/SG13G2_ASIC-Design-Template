@@ -13,8 +13,11 @@ if [ $# -ge 4 ]; then
 fi
 TARGET=${5:-'finish metadata'}
 DESIGN_CONFIG=./designs/$PLATFORM/$DESIGN_NAME/$CONFIG_MK
-LOG_FILE=./logs/$PLATFORM/$DESIGN_NAME.log
-mkdir -p "./logs/$PLATFORM"
+if [ -z "${WORK_HOME+x}" ]; then
+  WORK_HOME=.
+fi
+LOG_FILE=${WORK_HOME}/logs/$PLATFORM/$DESIGN_NAME.log
+mkdir -p "${WORK_HOME}/logs/$PLATFORM"
 
 __make="make DESIGN_CONFIG=$DESIGN_CONFIG"
 if [ -n "${FLOW_VARIANT+x}" ]; then
@@ -82,39 +85,5 @@ if [ $ret -eq 0 ] && grep -q 'power:' <(echo $TARGETS); then
   ret=$(( ret + $? ))
 fi
 set -x
-
-# Run Autotuner CI specifically for gcd on selected platforms.
-if [ -z "${RUN_AUTOTUNER+x}" ]; then
-  echo "RUN_AUTOTUNER not set, disable AT test."
-  RUN_AUTOTUNER="false"
-fi
-
-if [ "${RUN_AUTOTUNER}" == "true" ]; then
-  case $DESIGN_NAME in
-    "gcd")
-      # Keep RUN_AUTOTUNER enabled only for these designs
-      ;;
-    *)
-      echo "Disable AT test for design ${DESIGN_NAME}."
-      RUN_AUTOTUNER="false"
-      ;;
-  esac
-  case $PLATFORM in
-    "asap7" | "sky130hd" | "ihp-sg13g2" )
-      # Keep RUN_AUTOTUNER enabled only for these platforms
-      ;;
-    *)
-      echo "Disable AT test for platform ${PLATFORM}."
-      RUN_AUTOTUNER="false"
-      ;;
-  esac
-fi
-
-if [ "${RUN_AUTOTUNER}" == "true" ]; then
-  set +x
-  echo "Start AutoTuner test."
-  ./test/test_autotuner.sh $DESIGN_NAME $PLATFORM
-  set -x
-fi
 
 exit $ret

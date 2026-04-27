@@ -2,6 +2,7 @@ utl::set_metrics_stage "floorplan__{}"
 source $::env(SCRIPTS_DIR)/load.tcl
 erase_non_stage_variables floorplan
 load_design 1_synth.odb 1_synth.sdc
+source_step_tcl PRE FLOORPLAN
 
 proc report_unused_masters { } {
   set db [ord::get_db]
@@ -30,6 +31,10 @@ proc report_unused_masters { } {
 }
 
 report_unused_masters
+
+# Eliminate dead logic
+eliminate_dead_logic
+
 
 #Run check_setup
 puts "\n=========================================================================="
@@ -130,7 +135,8 @@ if { !$::env(SKIP_REPAIR_TIE_FANOUT) } {
 }
 
 if { [env_var_exists_and_non_empty SWAP_ARITH_OPERATORS] } {
-  log_cmd estimate_parasitics -placement
+  # Enable sanity checker until replace_arith_modules becomes stable
+  set_debug_level ODB replace_design_check_sanity 1
   replace_arith_modules
 }
 
@@ -139,15 +145,16 @@ if { $::env(REMOVE_ABC_BUFFERS) } {
   remove_buffers
 } else {
   # Skip clone & split
-  repair_timing_helper -setup -skip_last_gasp -sequence "unbuffer,sizeup,swap,buffer,vt_swap"
+  repair_timing_helper -setup -skip_last_gasp -sequence "unbuffer,sizeup,swap,vt_swap"
 }
 
 puts "Default units for flow"
 report_units
 report_units_metric
+report_layer_rc
 report_metrics 2 "floorplan final" false false
 
-source_env_var_if_exists POST_FLOORPLAN_TCL
+source_step_tcl POST FLOORPLAN
 source_env_var_if_exists IO_CONSTRAINTS
 
 orfs_write_db $::env(RESULTS_DIR)/2_1_floorplan.odb

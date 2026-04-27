@@ -70,15 +70,20 @@ export NUM_CORES
 
 #-------------------------------------------------------------------------------
 # setup all commands used within this flow
-export PYTHON_EXE ?= $(shell command -v python3)
+#
+# HERE BE DRAGONS: use bare `export VAR`, never `export VAR := $(VAR)`.
+#
+# `export VAR := $(VAR)` rebinds the variable to origin "file", which makes
+# get_variables (below) include it in UNSET_VARIABLES_NAMES. UNSET_AND_MAKE
+# then unsets it before the sub-make runs, so any `?=` fallback here fires
+# with the wrong value in the sub-make (e.g. the in-tree tools/install path
+# that does not exist in a Bazel sandbox). A bare `export` preserves the
+# original origin (environment when bazel-orfs supplies it, file when the
+# local default fills in), so the value survives UNSET_VARS.
+PYTHON_EXE ?= $(shell command -v python3)
+export PYTHON_EXE
 
-export TIME_BIN   ?= env time
-TIME_CMD = $(TIME_BIN) -f 'Elapsed time: %E[h:]min:sec. CPU time: user %U sys %S (%P). Peak memory: %MKB.'
-TIME_TEST = $(shell $(TIME_CMD) echo foo 2>/dev/null)
-ifeq (,$(strip $(TIME_TEST)))
-  TIME_CMD = $(TIME_BIN)
-endif
-export TIME_CMD
+export RUN_CMD = $(PYTHON_EXE) $(FLOW_HOME)/scripts/run_command.py
 
 # The following determine the executable location for each tool used by this flow.
 # Priority is given to
@@ -87,15 +92,19 @@ export TIME_CMD
 #          2.1 if in Nix shell: openroad, yosys from the environment
 #          2.2 ORFS compiled tools: openroad, yosys
 ifneq (${IN_NIX_SHELL},)
-  export OPENROAD_EXE ?= $(shell command -v openroad)
+  OPENROAD_EXE ?= $(shell command -v openroad)
 else
-  export OPENROAD_EXE ?= $(abspath $(FLOW_HOME)/../tools/install/OpenROAD/bin/openroad)
+  OPENROAD_EXE ?= $(abspath $(FLOW_HOME)/../tools/install/OpenROAD/bin/openroad)
 endif
 ifneq (${IN_NIX_SHELL},)
-  export OPENSTA_EXE ?= $(shell command -v sta)
+  OPENSTA_EXE ?= $(shell command -v sta)
 else
-  export OPENSTA_EXE ?= $(abspath $(FLOW_HOME)/../tools/install/OpenROAD/bin/sta)
+  OPENSTA_EXE ?= $(abspath $(FLOW_HOME)/../tools/install/OpenROAD/bin/sta)
 endif
+
+# See dragons comment near PYTHON_EXE: bare `export`, not `export VAR := $(VAR)`.
+export OPENROAD_EXE
+export OPENSTA_EXE
 
 OPENROAD_IS_VALID := $(if $(OPENROAD_EXE),$(shell test -x $(OPENROAD_EXE) && echo "true"),)
 
@@ -103,12 +112,15 @@ export OPENROAD_ARGS = -no_init -threads $(NUM_CORES) $(OR_ARGS)
 export OPENROAD_CMD = $(OPENROAD_EXE) -exit $(OPENROAD_ARGS)
 export OPENROAD_NO_EXIT_CMD = $(OPENROAD_EXE) $(OPENROAD_ARGS)
 export OPENROAD_GUI_CMD = $(OPENROAD_EXE) -gui $(OR_ARGS)
+export OPENROAD_WEB_CMD = $(OPENROAD_EXE) -web $(OR_ARGS)
 
 ifneq (${IN_NIX_SHELL},)
   YOSYS_EXE ?= $(shell command -v yosys)
 else
   YOSYS_EXE ?= $(abspath $(FLOW_HOME)/../tools/install/yosys/bin/yosys)
 endif
+
+# See dragons comment near PYTHON_EXE: bare `export`, not `export VAR := $(VAR)`.
 export YOSYS_EXE
 
 YOSYS_IS_VALID := $(if $(YOSYS_EXE),$(shell test -x $(YOSYS_EXE) && echo "true"),)
@@ -118,19 +130,17 @@ KLAYOUT_DIR = $(abspath $(FLOW_HOME)/../tools/install/klayout/)
 KLAYOUT_BIN_FROM_DIR = $(KLAYOUT_DIR)/klayout
 
 KEPLER_FORMAL_EXE ?= $(abspath $(FLOW_HOME)/../tools/install/kepler-formal/bin/kepler-formal)
-export KEPLER_FORMAL_EXE := $(KEPLER_FORMAL_EXE)
+export KEPLER_FORMAL_EXE
 
 ifeq ($(wildcard $(KLAYOUT_BIN_FROM_DIR)), $(KLAYOUT_BIN_FROM_DIR))
-export KLAYOUT_CMD ?= sh -c 'LD_LIBRARY_PATH=$(dir $(KLAYOUT_BIN_FROM_DIR)) $$0 "$$@"' $(KLAYOUT_BIN_FROM_DIR)
+KLAYOUT_CMD ?= sh -c 'LD_LIBRARY_PATH=$(dir $(KLAYOUT_BIN_FROM_DIR)) $$0 "$$@"' $(KLAYOUT_BIN_FROM_DIR)
 else
 ifeq ($(KLAYOUT_CMD),)
-export KLAYOUT_CMD := $(shell command -v klayout)
+KLAYOUT_CMD ?= $(shell command -v klayout)
 endif
 endif
 
-ifneq ($(shell command -v stdbuf),)
-  STDBUF_CMD ?= stdbuf -o L
-endif
+export KLAYOUT_CMD := $(KLAYOUT_CMD)
 
 #-------------------------------------------------------------------------------
 WRAPPED_LEFS = $(foreach lef,$(notdir $(WRAP_LEFS)),$(OBJECTS_DIR)/lef/$(lef:.lef=_mod.lef))
@@ -187,10 +197,11 @@ export RESULTS_ODB = $(notdir $(sort $(wildcard $(RESULTS_DIR)/*.odb)))
 export RESULTS_DEF = $(notdir $(sort $(wildcard $(RESULTS_DIR)/*.def)))
 export RESULTS_GDS = $(notdir $(sort $(wildcard $(RESULTS_DIR)/*.gds)))
 export RESULTS_OAS = $(notdir $(sort $(wildcard $(RESULTS_DIR)/*.oas)))
+export RESULTS_V = $(notdir $(sort $(wildcard $(RESULTS_DIR)/*.v)))
 export GDS_MERGED_FILE = $(RESULTS_DIR)/6_1_merged.$(STREAM_SYSTEM_EXT)
 
 define get_variables
-$(foreach V, $(.VARIABLES),$(if $(filter-out $(1), $(origin $V)), $(if $(filter-out .% %QT_QPA_PLATFORM% %TIME_CMD% KLAYOUT% GENERATE_ABSTRACT_RULE% do-step% do-copy% OPEN_GUI% OPEN_GUI_SHORTCUT% SUB_MAKE% UNSET_VARS% export%, $(V)), $V$ )))
+$(foreach V, $(.VARIABLES),$(if $(filter-out $(1), $(origin $V)), $(if $(filter-out .% %QT_QPA_PLATFORM% KLAYOUT% OPENROAD% OPENSTA% PYTHON% YOSYS% GENERATE_ABSTRACT_RULE% do-step% do-copy% OPEN_GUI% OPEN_GUI_SHORTCUT% SUB_MAKE% UNSET_VARS% export%, $(V)), $V$ )))
 endef
 
 export UNSET_VARIABLES_NAMES := $(call get_variables,command% line environment% default automatic)
@@ -217,16 +228,5 @@ vars:
 
 .PHONY: print-%
 print-%:
-  # HERE BE DRAGONS!
-  #
-  # We have to use /tmp. $(OBJECTS_DIR) may not exist
-  # at $(file) expansion time, which is before commands are run
-  # here, so we can't mkdir -p $(OBJECTS_DIR) either
-  #
-  # We have to use $(file ...) because we want to be able
-  # to print variables that contain newlines.
-	$(eval TEMP_FILE := $(shell mktemp /tmp/print_tmp.XXXXXX))
-	@$(file >$(TEMP_FILE),$($*))
-	@echo -n "$*: "
-	@cat $(TEMP_FILE)
-	@rm -f $(TEMP_FILE)
+	$(info $*: $($*))
+	@true

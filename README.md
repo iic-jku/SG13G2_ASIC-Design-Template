@@ -2,6 +2,12 @@
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.18378633.svg)](https://doi.org/10.5281/zenodo.18378633)
 
+> [!IMPORTANT]
+> This repository requires the [IIC-OSIC-TOOLS](https://github.com/iic-jku/IIC-OSIC-TOOLS) container with tag `2026.02`.
+
+> [!TIP]
+> This shell-script-driven repository uses OpenROAD Flow-Scripts (ORFS) to synthesize a digital macro and demonstrates gate-level simulation with Ngspice in Xschem for use in analog mixed-signal designs. Looking for something more powerful? A newer template repository uses the LibreLane flow, which simulates, builds, and fully verifies (LVS, DRC, PEX) a complete analog mixed-signal chip, including padframe generation and top-level assembly. This template repository is Makefile-driven and provides a universal design flow solution: Just clone the repo, run `make all`, and get a tapeout-ready analog-mixed signal chip. This is the starting point for your own custom silicon. Focus on your design and do not care about the tools and the design flow.
+
 ## Introduction
 
 This template repository is suited for analog mixed-signal design with the 130nm BiCMOS open-source SG13G2 PDK by IHP and the IIC-OSIC-Tools by the Institute for Integrated Circuits and Quantum Computing (IICQC), Johannes Kepler University, Linz (JKU).
@@ -14,7 +20,7 @@ The installation of IIC-OSIC-Tools is explained under `SG13G2_ASIC-Design-Templa
 
 **Update:** Since version 2025.03, third-party software such as Xserver is no longer required.
 
-The recommended folder structure makes it easy to automate with shell scripts. VHDL files are read and converted into Verilog files (`vhdl2verilog.sh`). If Verilog files are available directly, this step can be skipped. With OpenROAD flow-scripts (ORFS) the newly generated Verilog file is synthesized and a layout is created. The synthesized Verilog file is then converted into a `.xspice` file with `qflow` scripts (`vlog2Verilog`, `vlog2Spice`, `spi2xspice.py`) which can be included into `Xschem` for analog-digital mixed simulation. All these scripts are automated with `run_all.sh` and can be cleaned again with `clean_all.sh`. The template contains a 4-Bit counter with an enable input to get a better understanding of the structure and the file paths within the scripts.
+The recommended folder structure makes it easy to automate with shell scripts. VHDL files are read and converted into Verilog files (`vhdl2verilog.sh`). If Verilog files are available directly, this step can be skipped. With OpenROAD Flow-Scripts (ORFS) the newly generated Verilog file is synthesized and a layout is created. The synthesized Verilog file is then converted into a `.xspice` file with `qflow` scripts (`vlog2Verilog`, `vlog2Spice`, `spi2xspice.py`) which can be included into `Xschem` for analog-digital mixed simulation. All these scripts are automated with `run_all.sh` and can be cleaned again with `clean_all.sh`. The template contains a 4-Bit counter with an enable input to get a better understanding of the structure and the file paths within the scripts.
 
 <img src="doc\scripts_overview.svg" width="400"/>
 

@@ -10,7 +10,7 @@ Institute for Integrated Circuits and Quantum Computing, Johannes Kepler Univers
 > This repository requires the [IIC-OSIC-TOOLS](https://github.com/iic-jku/IIC-OSIC-TOOLS) container with tag `2026.02`.
 
 > [!TIP]
-> This shell-script-driven repository uses OpenROAD Flow-Scripts (ORFS) to synthesize a digital macro and demonstrates gate-level simulation with Ngspice in Xschem for use in analog mixed-signal designs. Looking for something more powerful? A newer template repository simulates, builds, and fully verifies (LVS, DRC, PEX) a complete analog mixed-signal chip, including padframe generation and top-level assembly. It uses:
+> This shell-script-driven repository uses OpenROAD Flow-Scripts (ORFS) to synthesize a digital macro and demonstrates gate-level simulation with Ngspice in Xschem for use in analog mixed-signal designs. Looking for something more powerful? A newer template repository ([ihp-sg13g2-ams-chip-template](https://github.com/iic-jku/ihp-sg13g2-ams-chip-template)) simulates, builds, and fully verifies (LVS, DRC, PEX) a complete analog mixed-signal chip, including padframe generation and top-level assembly. It uses:
 > - **LibreLane Flow** for digital macro hardening, padframe generation and top-level assembly
 > - **Xschem** for schematic entry
 > - **Ngspice**, **VACASK** and **CACE** for analog simulation

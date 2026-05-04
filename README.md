@@ -2,11 +2,23 @@
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.18378633.svg)](https://doi.org/10.5281/zenodo.18378633)
 
+(c) 2025-2026 Simon Dorrer
+
+Institute for Integrated Circuits and Quantum Computing, Johannes Kepler University (JKU), Linz, Austria
+
 > [!IMPORTANT]
 > This repository requires the [IIC-OSIC-TOOLS](https://github.com/iic-jku/IIC-OSIC-TOOLS) container with tag `2026.02`.
 
 > [!TIP]
-> This shell-script-driven repository uses OpenROAD Flow-Scripts (ORFS) to synthesize a digital macro and demonstrates gate-level simulation with Ngspice in Xschem for use in analog mixed-signal designs. Looking for something more powerful? A newer template repository uses the LibreLane flow, which simulates, builds, and fully verifies (LVS, DRC, PEX) a complete analog mixed-signal chip, including padframe generation and top-level assembly. This template repository is Makefile-driven and provides a universal design flow solution: Just clone the repo, run `make all`, and get a tapeout-ready analog-mixed signal chip. This is the starting point for your own custom silicon. Focus on your design and do not care about the tools and the design flow.
+> This shell-script-driven repository uses OpenROAD Flow-Scripts (ORFS) to synthesize a digital macro and demonstrates gate-level simulation with Ngspice in Xschem for use in analog mixed-signal designs. Looking for something more powerful? A newer template repository simulates, builds, and fully verifies (LVS, DRC, PEX) a complete analog mixed-signal chip, including padframe generation and top-level assembly. It uses:
+> - **LibreLane Flow** for digital macro hardening, padframe generation and top-level assembly
+> - **Xschem** for schematic entry
+> - **Ngspice**, **VACASK** and **CACE** for analog simulation
+> - **KLayout** for viewing and routing of the layout
+> - **Magic+Netgen** and **KLayout** for LVS, DRC and PEX verification
+> - **Verilog**, **cocotb**, **GTKWave** and **Surfer** for digital simulation
+> This template repository is Makefile-driven and provides a universal design flow solution: Just clone the repo, run `make all`, and get a tapeout-ready analog-mixed signal chip. This is the starting point for your own custom silicon. Focus on your design and do not care about the tools and the design flow!
+
 
 ## Introduction
 
@@ -31,6 +43,7 @@ I have also made a short video on how to use this repo: https://www.youtube.com/
 If you want to use other OpenROAD-compatible PDKs, just add the corresponding files to the `orfs/flow/platforms` folder. These files can be found at https://github.com/The-OpenROAD-Project/OpenROAD-flow-scripts.
 
 This template repository should update itself automatically using GitHub actions and `update_orfs.sh` when a new IIC-OSIC-TOOLS version is released.
+
 
 ## How to use this template for your design
 
@@ -76,20 +89,8 @@ Alternatively, one can post-process the data (e.g. down-sample or cut out data) 
 
 **Figure 2**: Ngspice data plotted with Python.
 
-## **ToDo**
 
-It is planned to add scripts or template / reference project files for the following features (help wanted).
-- [ ] `CACE` Support
-- [ ] easy-to-use workflow for DRC / LVS / PEX with `kLayout` / `Magic`
-- [ ] `LibreLane` Support
-- [ ] Post-Layout Simulation with `Spice`
-- [ ] `ngspice` & `verilog` RTL Co-Simulation using `Xschem`: https://www.youtube.com/watch?v=PPd7jkcHOgA / https://github.com/edneymatheus/ams-counter-xschem-tutorial
-- [ ] RTL Co-Simulation using `SpiceBind`
-- [ ] Gate-Level Simulation with `cocotb`
-- [ ] GDS Renderings with `Blender`
-- [ ] Verilog-A Support with `VACASK`
-
-## **Cite this work**
+## Cite this work
 
 ```
 @software{Dorrer_2026_ASIC_Template,

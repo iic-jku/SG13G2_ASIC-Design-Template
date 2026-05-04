@@ -1,4 +1,4 @@
-# An Open-Source ASIC Design Template for the SG13G2 IHP Open-PDK.
+# An Open-Source ASIC Design Template for the SG13G2 IHP Open-PDK
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.18378633.svg)](https://doi.org/10.5281/zenodo.18378633)
 

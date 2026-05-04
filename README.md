@@ -11,12 +11,14 @@ Institute for Integrated Circuits and Quantum Computing, Johannes Kepler Univers
 
 > [!TIP]
 > This shell-script-driven repository uses OpenROAD Flow-Scripts (ORFS) to synthesize a digital macro and demonstrates gate-level simulation with Ngspice in Xschem for use in analog mixed-signal designs. Looking for something more powerful? A newer template repository ([ihp-sg13g2-ams-chip-template](https://github.com/iic-jku/ihp-sg13g2-ams-chip-template)) simulates, builds, and fully verifies (LVS, DRC, PEX) a complete analog mixed-signal chip, including padframe generation and top-level assembly. It uses:
+>
 > - **LibreLane Flow** for digital macro hardening, padframe generation and top-level assembly
 > - **Xschem** for schematic entry
 > - **Ngspice**, **VACASK** and **CACE** for analog simulation
 > - **KLayout** for viewing and routing of the layout
 > - **Magic+Netgen** and **KLayout** for LVS, DRC and PEX verification
 > - **Verilog**, **cocotb**, **GTKWave** and **Surfer** for digital simulation
+>
 > This template repository is Makefile-driven and provides a universal design flow solution: Just clone the repo, run `make all`, and get a tapeout-ready analog-mixed signal chip. This is the starting point for your own custom silicon. Focus on your design and do not care about the tools and the design flow!
 
 

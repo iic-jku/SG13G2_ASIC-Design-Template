@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# deltaDebug.py integration smoke-test, run from ORFS/flow folder.
+# Out of tree integration smoke-test, run from ORFS/flow folder.
 #
 # Exit with error if anything is amiss, including evaluation of
 # variable names such as $(false), unused variables, etc.

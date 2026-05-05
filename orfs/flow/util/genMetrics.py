@@ -6,6 +6,7 @@
 # -----------------------------------------------------------------------------
 
 import os
+import shutil
 from datetime import datetime, timedelta
 from collections import defaultdict
 from uuid import uuid4 as uuid
@@ -48,9 +49,9 @@ def parse_args():
         "--output", "-o", required=False, default="metadata.json", help="Output file"
     )
     parser.add_argument("--hier", "-x", action="store_true", help="Hierarchical JSON")
-    parser.add_argument("--logs", help="Path to logs")
-    parser.add_argument("--reports", help="Path to reports")
-    parser.add_argument("--results", help="Path to results")
+    parser.add_argument("--logs", required=True, help="Path to logs")
+    parser.add_argument("--reports", required=True, help="Path to reports")
+    parser.add_argument("--results", required=True, help="Path to results")
     args = parser.parse_args()
 
     return args
@@ -142,16 +143,13 @@ def extractGnuTime(prefix, jsonFile, file):
 #
 def read_sdc(file_name):
     clkList = []
-    sdcFile = None
 
     try:
-        sdcFile = open(file_name, "r")
-    except IOError:
-        print("[WARN] Failed to open file:", file_name)
+        with open(file_name, "r") as sdcFile:
+            lines = sdcFile.readlines()
+    except OSError as e:
+        print(f"[WARN] Failed to open file: {file_name} ({e})")
         return clkList
-
-    lines = sdcFile.readlines()
-    sdcFile.close()
 
     for line in lines:
         if len(line.split()) < 2:
@@ -173,21 +171,31 @@ def read_sdc(file_name):
 # =============================================================================
 
 
-def is_git_repo(folder=None):
-    cmd = ["git", "branch"]
-    if folder is not None:
-        return call(cmd, stderr=STDOUT, stdout=open(os.devnull, "w"), cwd=folder) == 0
-    else:
-        return call(cmd, stderr=STDOUT, stdout=open(os.devnull, "w")) == 0
+def git_head_commit(git_exe, folder):
+    """Resolve the HEAD commit SHA of `folder`'s git working tree, or
+    return a descriptive fallback string. Accepts a pre-resolved
+    `git_exe` path so callers don't pay a `shutil.which` lookup per
+    invocation. Prints a [WARN] for the not-a-git-repo case (the
+    git-missing case is expected to be warned about by the caller)."""
+    if git_exe is None:
+        return "git not on PATH"
+    if not os.path.isdir(folder):
+        return "N/A"
+    with open(os.devnull, "w") as devnull:
+        if call([git_exe, "branch"], stderr=STDOUT, stdout=devnull, cwd=folder) != 0:
+            print("[WARN] not a git repo:", folder)
+            return "not a git repo"
+    return (
+        check_output([git_exe, "rev-parse", "HEAD"], cwd=folder).decode("utf-8").strip()
+    )
 
 
 def merge_jsons(root_path, output, files):
     paths = sorted(glob(os.path.join(root_path, files)))
     for path in paths:
-        file = open(path, "r")
-        data = json.load(file)
+        with open(path, "r") as file:
+            data = json.load(file)
         output.update(data)
-        file.close()
 
 
 def extract_metrics(
@@ -196,7 +204,7 @@ def extract_metrics(
     baseRegEx = "^{}\n^-*\n^{}"
 
     metrics_dict = defaultdict(dict)
-    metrics_dict["run__flow__generate_date"] = now.strftime("%Y-%m-%d %H:%M")
+    metrics_dict["run__flow__generate_date"] = datetime.now().strftime("%Y-%m-%d %H:%M")
     metrics_dict["run__flow__metrics_version"] = "Metrics_2.1.2"
     cmdOutput = check_output([os.environ.get("OPENROAD_EXE", "openroad"), "-version"])
     cmdFields = [x.decode("utf-8") for x in cmdOutput.split()]
@@ -205,37 +213,32 @@ def extract_metrics(
         metrics_dict["run__flow__openroad_commit"] = str(cmdFields[1])
     else:
         metrics_dict["run__flow__openroad_commit"] = "N/A"
-    if is_git_repo():
-        cmdOutput = check_output(["git", "rev-parse", "HEAD"])
-        cmdOutput = cmdOutput.decode("utf-8").strip()
-    else:
-        cmdOutput = "not a git repo"
-        print("[WARN]", cmdOutput)
-    metrics_dict["run__flow__scripts_commit"] = cmdOutput
+    git_exe = shutil.which("git")
+    if git_exe is None:
+        print("[WARN] git not on PATH; commit metadata will be N/A")
+    metrics_dict["run__flow__scripts_commit"] = git_head_commit(git_exe, cwd)
     metrics_dict["run__flow__uuid"] = str(uuid())
     metrics_dict["run__flow__design"] = design
     metrics_dict["run__flow__platform"] = platform
     platformDir = os.environ.get("PLATFORM_DIR")
     if platformDir is None:
         print("[INFO]", "PLATFORM_DIR env variable not set")
-        cmdOutput = "N/A"
-    elif is_git_repo(folder=platformDir):
-        cmdOutput = check_output(["git", "rev-parse", "HEAD"], cwd=platformDir)
-        cmdOutput = cmdOutput.decode("utf-8").strip()
+        metrics_dict["run__flow__platform_commit"] = "N/A"
     else:
-        print("[WARN]", "not a git repo")
-        cmdOutput = "N/A"
-    metrics_dict["run__flow__platform_commit"] = cmdOutput
+        metrics_dict["run__flow__platform_commit"] = git_head_commit(
+            git_exe, platformDir
+        )
     metrics_dict["run__flow__variant"] = flow_variant
 
     # Synthesis
     # =========================================================================
 
-    # The new format (>= 0.57) is: <count> <area> cells
+    # The new format (>= 0.57) with -hierarchy is:
+    #    <count> <area> <local_count> <local_area> cells
     extractTagFromFile(
         "synth__design__instance__count__stdcell",
         metrics_dict,
-        "^\\s+(\\d+)\\s+[-0-9.]+\\s+cells$",
+        "^\\s+(\\d+)\\s+[-0-9.]+\\s+\\S+\\s+\\S+\\s+cells$",
         rptPath + "/synth_stat.txt",
     )
 
@@ -315,6 +318,7 @@ def extract_metrics(
 
     failed = False
     total = timedelta()
+    elapsed_seconds = {}
     for key in metrics_dict:
         if key.endswith("__runtime__total"):
             # Big try block because Hour and microsecond is optional
@@ -341,10 +345,17 @@ def extract_metrics(
             )
             total += delta
 
+            stage = key[: -len("__runtime__total")]
+            elapsed_seconds[stage + "__elapsed_seconds"] = delta.total_seconds()
+
     if failed:
         metrics_dict["total_time"] = "ERR"
+        metrics_dict["total_elapsed_seconds"] = "ERR"
     else:
         metrics_dict["total_time"] = str(total)
+        metrics_dict["total_elapsed_seconds"] = total.total_seconds()
+
+    metrics_dict.update(elapsed_seconds)
 
     metrics_dict = {
         key.replace(":", "__"): value for key, value in metrics_dict.items()
@@ -364,17 +375,17 @@ def extract_metrics(
         json.dump(metrics_dict, resultSpecfile, indent=2, sort_keys=True)
 
 
-args = parse_args()
-now = datetime.now()
+if __name__ == "__main__":
+    args = parse_args()
 
-extract_metrics(
-    os.path.join(os.path.dirname(os.path.realpath(__file__)), "../"),
-    args.platform,
-    args.design,
-    args.flowVariant,
-    args.output,
-    args.hier,
-    args.logs,
-    args.reports,
-    args.results,
-)
+    extract_metrics(
+        os.path.join(os.path.dirname(os.path.realpath(__file__)), "../"),
+        args.platform,
+        args.design,
+        args.flowVariant,
+        args.output,
+        args.hier,
+        args.logs,
+        args.reports,
+        args.results,
+    )

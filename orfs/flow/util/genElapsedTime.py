@@ -43,7 +43,7 @@ def print_log_dir_times(logdir, args):
 
     # Loop on all log files in the directory
     for f in sorted(pathlib.Path(logdir).glob("**/*.log")):
-        if "eqy_output" in str(f):
+        if any(x in str(f) for x in ["eqy_output", "rsz_lec_check"]):
             continue
         # Extract Elapsed Time line from log file
         stem = os.path.splitext(os.path.basename(str(f)))[0]

@@ -101,6 +101,28 @@ export TAPCELL_TCL ?= $(PLATFORM_DIR)/tapcell.tcl
 
 export MACRO_PLACE_HALO ?= 40 40
 
+# Will be placed left to right
+export IO_NORTH_PINS ??=
+export IO_SOUTH_PINS ??=
+# Will be placed bottom to top
+export IO_EAST_PINS ??=
+export IO_WEST_PINS ??=
+
+# Variables for bondpad
+export IO_BONDPAD_SIZE ?= 70
+export IO_BONDPAD_NAME ?= bondpad_70x70
+# Variables for padframe
+export IO_LENGTH ?= 180
+export IO_WIDTH ?= 80
+export IO_SEALRING_OFFSET ?= 70
+export IO_FILLER_CELLS ?= \
+sg13g2_Filler10000 \
+sg13g2_Filler4000 \
+sg13g2_Filler2000 \
+sg13g2_Filler1000 \
+sg13g2_Filler400 \
+sg13g2_Filler200
+
 #---------------------------------------------------------
 # Place
 # --------------------------------------------------------
@@ -147,6 +169,8 @@ export KLAYOUT_DRC_FILE ?= $(PLATFORM_DIR)/drc/sg13g2_minimal.lydrc
 #LVS Check
 export CDL_FILE ?= $(PLATFORM_DIR)/cdl/sg13g2_stdcell.cdl
 #export KLAYOUT_LVS_FILE = $(PLATFORM_DIR)/lvs/$(PLATFORM).lylvs
+
+export REMOVE_CELLS_FOR_LEC ?= "bondpad_70* sg13g2*"
 
 # ---------------------------------------------------------
 #  Final

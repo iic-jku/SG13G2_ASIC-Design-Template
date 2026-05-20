@@ -62,14 +62,17 @@ save_image -resolution $resolution $::env(REPORTS_DIR)/final_clocks.webp
 gui::clear_selections
 
 gui::show_widget "Clock Tree Viewer"
-foreach clock [get_clocks *] {
-  if { [llength [get_property $clock sources]] > 0 } {
-    set clock_name [get_name $clock]
-    save_clocktree_image -clock $clock_name \
-      -width 1024 -height 1024 \
-      $::env(REPORTS_DIR)/cts_$clock_name.webp
-    gui::select_clockviewer_clock $clock_name
-    save_image -resolution $resolution $::env(REPORTS_DIR)/cts_${clock_name}_layout.webp
+foreach scene [get_scenes] {
+  foreach clock [get_clocks *] {
+    if { [llength [get_property $clock sources]] > 0 } {
+      set clock_name [get_name $clock]
+      save_clocktree_image -clock $clock_name \
+        -width 1024 -height 1024 \
+        -scene $scene \
+        $::env(REPORTS_DIR)/cts_$clock_name.webp
+      gui::select_clockviewer_clock $clock_name
+      save_image -resolution $resolution $::env(REPORTS_DIR)/cts_${scene}_${clock_name}_layout.webp
+    }
   }
 }
 gui::hide_widget "Clock Tree Viewer"

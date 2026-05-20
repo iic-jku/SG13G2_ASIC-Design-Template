@@ -51,9 +51,13 @@ while read -r VAR; do
     if [[ "${name}" == *"SCRIPTS_DIR"* ]]; then
         value=$(sed -e "s,${FLOW_ROOT},.,g" <<< "${value}")
     fi
-    for path in workspace platforms; do
-        value=$(sed -e "s,\(^\|[: \"']\)/${path},\1./${path},g" <<< "${value}")
-    done
+
+    # PII members use PRESERVE_PATHS=1 make issue ...
+    if [[ ! -v PRESERVE_PATHS ]]; then
+        for path in workspace platforms; do
+            value=$(sed -e "s,\(^\|[: \"']\)/${path},\1./${path},g" <<< "${value}")
+        done
+    fi
     value=$(sed -e "s,${FLOW_ROOT},\${FLOW_HOME},g" <<< "${value}")
     value=$(sed -e "s,${ORFS_ROOT},\${FLOW_HOME}/\.\.,g" <<< "${value}")
 

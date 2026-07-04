@@ -56,8 +56,8 @@ if [[ ! -v EXCLUDE_PLATFORM ]]; then
     fi
 fi
 
-VARS_BASENAME=vars-$DESIGN_NICKNAME-$PLATFORM-$FLOW_VARIANT
-RUN_ME_SCRIPT=run-me-$DESIGN_NICKNAME-$PLATFORM-$FLOW_VARIANT.sh
+VARS_BASENAME=${WORK_HOME}/vars-$DESIGN_NICKNAME-$PLATFORM-$FLOW_VARIANT
+RUN_ME_SCRIPT=${WORK_HOME}/run-me-$DESIGN_NICKNAME-$PLATFORM-$FLOW_VARIANT.sh
 
 for i in $ISSUE_CP_FILE_VARS ; do
     if [ -v ${i} ]; then
@@ -73,15 +73,36 @@ ISSUE_CP_FILES+="${ISSUE_CP_FILES_PLATFORM} \
     $VARS_BASENAME.tcl \
     $VARS_BASENAME.gdb"
 
+ISSUE_SCRIPT=${SCRIPTS_DIR}/${ISSUE_TARGET}.tcl
+if grep -q -E "synth_preamble|yosys -import" "${ISSUE_SCRIPT}"; then
+    IS_YOSYS=1
+else
+    IS_YOSYS=0
+fi
+
+# Source the vars file relative to the run-me script itself, so the
+# reproducible works out of the box wherever the tarball is extracted
+# (WORK_HOME is an absolute CI path that does not exist elsewhere).
+if [ "$IS_YOSYS" -eq 1 ]; then
 cat > ${RUN_ME_SCRIPT} <<EOF
 #!/usr/bin/env bash
-source ${VARS_BASENAME}.sh
+cd "\$(dirname "\$0")"
+source ./$(basename ${VARS_BASENAME}).sh
+export PYTHON_EXE=\${PYTHON_EXE:-\$(command -v python3)}
+yosys ${YOSYS_FLAGS:-} -c \${SCRIPTS_DIR}/${ISSUE_TARGET}.tcl
+EOF
+else
+cat > ${RUN_ME_SCRIPT} <<EOF
+#!/usr/bin/env bash
+cd "\$(dirname "\$0")"
+source ./$(basename ${VARS_BASENAME}).sh
 if [[ ! -z \${GDB+x} ]]; then
     gdb --args openroad -no_init -threads ${NUM_CORES:-1} \${SCRIPTS_DIR}/${ISSUE_TARGET}.tcl
 else
     openroad -no_init -threads ${NUM_CORES:-1} \${SCRIPTS_DIR}/${ISSUE_TARGET}.tcl
 fi
 EOF
+fi
 chmod +x ${RUN_ME_SCRIPT}
 
 rm -f ${VARS_BASENAME}.sh ${VARS_BASENAME}.tcl ${VARS_BASENAME}.gdb || true
@@ -106,10 +127,20 @@ else
     DESIGN_PLATFORM_FILES="$DESIGN_CONFIG $PLATFORM_DIR/config*.mk"
 fi
 
+# Strip the WORK_HOME prefix as well, so files generated outside FLOW_HOME
+# (vars, run-me, logs, ... when WORK_HOME points at a CI workspace) land at
+# the tarball root instead of recreating the absolute path (e.g. tmp/...).
+# Both the literal and the symlink-resolved form may appear in member names.
+WORK_ROOT=$(realpath "${WORK_HOME:-.}")
+WORK_HOME_TRANSFORMS=(--transform="s|^${ISSUE_TARGET}_${ISSUE_TAG}${WORK_ROOT}//*|${ISSUE_TARGET}_${ISSUE_TAG}/|S")
+if [[ "${WORK_HOME:-.}" == /* && "${WORK_HOME%/}" != "${WORK_ROOT}" ]]; then
+    WORK_HOME_TRANSFORMS+=(--transform="s|^${ISSUE_TARGET}_${ISSUE_TAG}${WORK_HOME%/}//*|${ISSUE_TARGET}_${ISSUE_TAG}/|S")
+fi
 tar --use-compress-program=${COMPRESS} \
     --ignore-failed-read -chf ${TAR_NAME} \
     --transform="s|^|${ISSUE_TARGET}_${ISSUE_TAG}/|S" \
     --transform="s|^${ISSUE_TARGET}_${ISSUE_TAG}${FLOW_HOME}/|${ISSUE_TARGET}_${ISSUE_TAG}/|S" \
+    "${WORK_HOME_TRANSFORMS[@]}" \
     $DESIGN_PLATFORM_FILES \
     $LOG_DIR \
     $OBJECTS_DIR \

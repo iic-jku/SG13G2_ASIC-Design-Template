@@ -16,6 +16,17 @@ if { [env_var_exists_and_non_empty DEF_FILE] } {
   }
   set input_file $::env(DEF_FILE)
   log_cmd read_def $input_file
+} elseif { [env_var_exists_and_non_empty V_FILE] } {
+  log_cmd read_lef $::env(TECH_LEF)
+  log_cmd read_lef $::env(SC_LEF)
+  if { [env_var_exists_and_non_empty ADDITIONAL_LEFS] } {
+    foreach lef $::env(ADDITIONAL_LEFS) {
+      log_cmd read_lef $lef
+    }
+  }
+  set input_file $::env(V_FILE)
+  log_cmd read_verilog $input_file
+  log_cmd link_design {*}[hier_options] $::env(DESIGN_NAME)
 } else {
   set input_file $::env(ODB_FILE)
   log_cmd read_db {*}[hier_options] $input_file
@@ -65,6 +76,11 @@ if { [ord::openroad_gui_compiled] } {
   set db_basename [file rootname [file tail $input_file]]
   gui::set_title \
     "OpenROAD - $::env(PLATFORM)/$::env(DESIGN_NICKNAME)/$::env(FLOW_VARIANT) - ${db_basename}"
+}
+
+if { [env_var_equals LIB_MODEL CCS] } {
+  puts "Using CCS delay calculation"
+  log_cmd set_delay_calculator prima
 }
 
 if { $::env(GUI_TIMING) } {

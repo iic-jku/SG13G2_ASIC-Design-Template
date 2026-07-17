@@ -31,6 +31,8 @@ export LIB_FILES ?= $(TYP_LIB_FILES)
 export GDS_FILES ?= $(PLATFORM_DIR)/gds/sg13g2_stdcell.gds \
                     $(ADDITIONAL_GDS)
 
+export PLATFORM_TCL ?= $(PLATFORM_DIR)/suppress_message.tcl
+
 # Dont use cells to ease congestion
 # Specify at least one filler cell if none
 
@@ -101,6 +103,28 @@ export TAPCELL_TCL ?= $(PLATFORM_DIR)/tapcell.tcl
 
 export MACRO_PLACE_HALO ?= 40 40
 
+# Will be placed left to right
+export IO_NORTH_PINS ??=
+export IO_SOUTH_PINS ??=
+# Will be placed bottom to top
+export IO_EAST_PINS ??=
+export IO_WEST_PINS ??=
+
+# Variables for bondpad
+export IO_BONDPAD_SIZE ?= 70
+export IO_BONDPAD_NAME ?= bondpad_70x70
+# Variables for padframe
+export IO_LENGTH ?= 180
+export IO_WIDTH ?= 80
+export IO_SEALRING_OFFSET ?= 70
+export IO_FILLER_CELLS ?= \
+sg13g2_Filler10000 \
+sg13g2_Filler4000 \
+sg13g2_Filler2000 \
+sg13g2_Filler1000 \
+sg13g2_Filler400 \
+sg13g2_Filler200
+
 #---------------------------------------------------------
 # Place
 # --------------------------------------------------------
@@ -115,6 +139,8 @@ export MAX_ROUTING_LAYER    ?= Metal5
 #export VIA_IN_PIN_MIN_LAYER ?= Metal1
 #export VIA_IN_PIN_MAX_LAYER ?= Metal1
 #export DISABLE_VIA_GEN      ?= 1
+
+export OPT_POST_GRT_WNS     ?= 0
 
 # Define fastRoute tcl
 export FASTROUTE_TCL ?= $(PLATFORM_DIR)/fastroute.tcl
@@ -147,6 +173,8 @@ export KLAYOUT_DRC_FILE ?= $(PLATFORM_DIR)/drc/sg13g2_minimal.lydrc
 #LVS Check
 export CDL_FILE ?= $(PLATFORM_DIR)/cdl/sg13g2_stdcell.cdl
 #export KLAYOUT_LVS_FILE = $(PLATFORM_DIR)/lvs/$(PLATFORM).lylvs
+
+export REMOVE_CELLS_FOR_LEC ?= "bondpad_70* sg13g2*"
 
 # ---------------------------------------------------------
 #  Final

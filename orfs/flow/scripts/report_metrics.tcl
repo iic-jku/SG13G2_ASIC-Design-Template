@@ -224,7 +224,11 @@ proc report_metrics { stage when { include_erc true } { include_clock_skew true 
     report_puts "\n=========================================================================="
     report_puts "$when slack div critical path delay"
     report_puts "--------------------------------------------------------------------------"
-    report_puts "[format "%4f" [expr $path_slack / $path_delay * 100]]"
+    if { $path_delay != 0.0 } {
+      report_puts "[format "%4f" [expr $path_slack / $path_delay * 100]]"
+    } else {
+      report_puts "N/A (0 delay)"
+    }
   }
 
   report_puts "\n=========================================================================="

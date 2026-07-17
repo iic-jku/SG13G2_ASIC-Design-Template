@@ -1,14 +1,28 @@
+# Extract cell names
+proc get_liberty_cell_names { } {
+  return [tee -q -s result.string select -list-mod =A:liberty_cell]
+}
+
 proc log_cmd { cmd args } {
   # log the command, escape arguments with spaces
   set log_cmd "$cmd[join [lmap arg $args { format " %s" [expr { [string match {* *} $arg] ? "\"$arg\"" : "$arg" }] }] ""]" ;# tclint-disable-line line-length
   puts $log_cmd
-  set start [clock seconds]
+  # Tcl's `clock` lives in clock.tcl, auto-loaded from TCL_LIBRARY. Hermetic
+  # build environments (e.g. Bazel linking yosys against @tcl_lang) don't
+  # always ship the Tcl library in runfiles, so `clock` may be undefined.
+  # The timing log is cosmetic — skip it when `clock` isn't available.
+  set has_clock [expr { [info commands clock] ne "" }]
+  if { $has_clock } {
+    set start [clock seconds]
+  }
   set result [uplevel 1 [list $cmd {*}$args]]
-  set time [expr { [clock seconds] - $start }]
-  if { $time >= 5 } {
-    # Ideally we'd use a single line, but the command can output text
-    # and we don't want to mix it with the log, so output the time it took afterwards.
-    puts "Took $time seconds: $log_cmd"
+  if { $has_clock } {
+    set time [expr { [clock seconds] - $start }]
+    if { $time >= 5 } {
+      # Ideally we'd use a single line, but the command can output text
+      # and we don't want to mix it with the log, so output the time it took afterwards.
+      puts "Took $time seconds: $log_cmd"
+    }
   }
   return $result
 }
@@ -60,7 +74,10 @@ proc recover_power_helper { } {
 }
 
 proc extract_stage { input_file } {
-  if { ![regexp {/([0-9])_(([0-9])_)?} $input_file match num1 _ num2] } {
+  # Match the stage prefix on the basename, not the full path: an ancestor
+  # dir like ".../4_something/3_place.odb" would otherwise match "4_" -> stage 4.
+  set stage_file [file tail $input_file]
+  if { ![regexp {^([0-9])_(?:([0-9])_)?} $stage_file match num1 num2] } {
     puts "Error: Could not determine design stage from $input_file"
     exit 1
   }
@@ -192,6 +209,7 @@ proc source_env_var_if_exists { env_var } {
   }
 }
 
+
 # Feature toggle for now, eventually the -hier option
 # will be default and this code will be deleted.
 proc hier_options { } {
@@ -229,6 +247,27 @@ proc is_physical_only_master { master } {
   return 0
 }
 
+# Returns 1 if the master has no signal pins (only power/ground or none).
+proc has_signal_pins { master } {
+  foreach mterm [$master getMTerms] {
+    set sig_type [$mterm getSigType]
+    if { $sig_type != "POWER" && $sig_type != "GROUND" } {
+      return 1
+    }
+  }
+  return 0
+}
+
+# Returns 1 if the master has a corresponding liberty cell.
+proc has_liberty_cell { master } {
+  set master_name [$master getName]
+  set lib_cells [get_lib_cells -quiet */$master_name]
+  if { $lib_cells == {} } {
+    return 0
+  }
+  return 1
+}
+
 # Finds all physical-only masters in the current database and
 # returns their names.
 proc find_physical_only_masters { } {
@@ -237,8 +276,19 @@ proc find_physical_only_masters { } {
   set physical_only_masters [list]
   foreach lib $libs {
     foreach master [$lib getMasters] {
+      set master_name [$master getName]
       if { [is_physical_only_master $master] } {
-        lappend physical_only_masters [$master getName]
+        lappend physical_only_masters $master_name
+        continue
+      }
+
+      # Consider cells with no signal pins and no liberty cell as physical-only
+      if { [has_liberty_cell $master] == 0 } {
+        if { [has_signal_pins $master] == 0 } {
+          lappend physical_only_masters $master_name
+        } else {
+          puts "Warning: master $master_name has signal pins but no liberty cell"
+        }
       }
     }
   }
@@ -257,4 +307,25 @@ proc orfs_write_sdc { output_file } {
     return
   }
   log_cmd write_sdc -no_timestamp $output_file
+}
+
+# For a stage that leaves the design unchanged, copying the input .odb
+# forward is much faster than serializing the in-memory database again
+# with write_db. Gated like orfs_write_db: in a single-process flow
+# (WRITE_ODB_AND_SDC_EACH_STAGE=0) the input file may not exist and no
+# stage file should be produced.
+#
+# exec cp rather than Tcl's file copy: file copy sets the destination
+# mtime with second resolution, which breaks make's timestamp-based
+# up-to-date checks for fast builds.
+proc orfs_copy_db { input_file output_file } {
+  if { !$::env(WRITE_ODB_AND_SDC_EACH_STAGE) } {
+    return
+  }
+  log_cmd exec cp $input_file $output_file
+}
+
+proc source_step_tcl { hook_type step_name } {
+  set env_var "${hook_type}_${step_name}_TCL"
+  source_env_var_if_exists $env_var
 }
